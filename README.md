@@ -4,7 +4,7 @@ Control the responsive style of html elements without creating one-off classes a
 
 ## Installation
 
-`npm -i responsive-style-attr --save`
+`npm i responsive-style-attr --save`
 
 The package contains three builds:
 
