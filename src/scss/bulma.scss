@@ -1,0 +1,8 @@
+@import "../../node_modules/bulma/sass/utilities/initial-variables";
+
+html{
+
+  --breakpoints-default: [["mobile", "0px"], ["tablet", "769px"], ["desktop", "#{960px + (2 * $gap)}"],["widescreen", "#{1152px + (2 * $gap)}"], ["fullhd", "#{1344px + (2 * $gap)}"]];
+
+}
+

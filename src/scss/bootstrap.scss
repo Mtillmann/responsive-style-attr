@@ -1,0 +1,13 @@
+@import "../../node_modules/bootstrap/scss/functions";
+@import "../../node_modules/bootstrap/scss/variables";
+
+html{
+  @function bootstrap-breakpoint-map($breakpoints) {
+    $_map: ();
+    @each $key, $value in $breakpoints {
+      $_map: append($_map, #{"[\""}#{$key}#{"\",\""}#{$value}#{"\"]"}, "comma");
+    }
+    @return $_map;
+  }
+  --breakpoints-default: [#{bootstrap-breakpoint-map($grid-breakpoints)}];
+}

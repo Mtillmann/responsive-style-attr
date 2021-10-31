@@ -1,0 +1,42 @@
+{
+  "name": "responsive-style-attr",
+  "version": "0.0.1",
+  "main": "dist/resp-style-attr.cjs.js",
+  "module": "dist/resp-style-attr.esm.js",
+  "browser": "dist/resp-style-attr.umd.js",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^20.0.0",
+    "@rollup/plugin-node-resolve": "^13.0.5",
+    "@rollup/plugin-typescript": "^8.2.5",
+    "@types/ms": "^0.7.31",
+    "bootstrap": "^5.1.1",
+    "bulma": "^0.9.3",
+    "foundation-sites": "^6.7.3",
+    "jasmine-core": "^3.9.0",
+    "karma": "^6.3.4",
+    "karma-chrome-launcher": "^3.1.0",
+    "karma-coverage": "^2.0.3",
+    "karma-jasmine": "^4.0.1",
+    "karma-jasmine-html-reporter": "^1.7.0",
+    "karma-requirejs": "^1.1.0",
+    "node-sass": "^6.0.1",
+    "requirejs": "^2.3.6",
+    "rollup": "^2.57.0",
+    "terser": "^5.9.0",
+    "ts-node": "^10.2.1",
+    "tslib": "^2.3.1",
+    "typescript": "^4.4.3"
+  },
+  "scripts": {
+    "build": "terser dist/resp-style-attr.umd.js --compress --mangle --output dist/resp-style-attr.umd.min.js",
+    "ts:build": "rollup -c",
+    "ts:dev": "rollup --config \"rollup.dev-config.js\" -w",
+    "ts:test": "rollup --config \"rollup.dev-config.js\" && karma start",
+    "ts:pretest": "npm run ts:build",
+    "sass:watch-dev": "node-sass --watch src/scss --output dev/css",
+    "sass:dev": "node-sass --recursive --source-comments --source-map true scss --output dev/css"
+  },
+  "files": [
+    "dist"
+  ]
+}
