@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>simplest test</title>
+
+    <script src="js/rsa.dev.umd.js"></script>
+    <link rel="stylesheet" href="css/bootstrap.css">
+
+    <style>
+        body{
+            font-family: sans-serif; font-size: 2rem;
+        }
+
+        h1{
+            font-size:3rem;
+            text-align: center;
+        }
+
+        div{
+            margin:3rem;
+            padding:3rem;
+            text-align: center;
+            font-size: 2rem;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Simplest Test</h1>
+
+<div data-rsa-style='{"20px-up" : "border: 5px solid blue"}'>
+    If you see a blue border, literal values work
+</div>
+
+<div data-rsa-style='{"@xs-up" : "border: 5px solid orange"}'>
+    If you see an orange border, breakpoint keys work
+</div>
+
+
+<script>
+    window.addEventListener('load', () => {
+        RespStyleAttr.init();
+    })
+</script>
+</body>
+</html>
