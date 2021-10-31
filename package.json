@@ -1,6 +1,6 @@
 {
   "name": "responsive-style-attr",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "dist/resp-style-attr.cjs.js",
   "module": "dist/resp-style-attr.esm.js",
   "browser": "dist/resp-style-attr.umd.js",
