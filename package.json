@@ -1,9 +1,10 @@
 {
   "name": "responsive-style-attr",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "main": "dist/resp-style-attr.cjs.js",
   "module": "dist/resp-style-attr.esm.js",
   "browser": "dist/resp-style-attr.umd.js",
+  "homepage": "https://mtillmann.github.io/responsive-style-attr/",
   "repository": {
     "type": "git",
     "url": "https://github.com/Mtillmann/responsive-style-attr.git"
