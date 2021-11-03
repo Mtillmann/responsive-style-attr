@@ -1,5 +1,5 @@
 var defaultOptions = {
-    debug: true,
+    debug: false,
     breakpointSelector: 'html',
     breakpointKey: 'default',
     selectorTemplate: function (s) { return ".rsa-" + s; },
@@ -21,7 +21,7 @@ function emitDebugMessage(data, type) {
 var Breakpoints = /** @class */ (function () {
     function Breakpoints(options) {
         if (options === void 0) { options = {}; }
-        this.breakpoints = [];
+        this.breakpoints = [['undefined', '0px']];
         this.breakpointMap = {};
         this.keyMap = [];
         this.regexps = {};
@@ -40,6 +40,9 @@ var Breakpoints = /** @class */ (function () {
         return this.breakpointMap[key] || null;
     };
     Breakpoints.prototype.test = function (keyToTest) {
+        if (this.breakpoints[0][0] === 'undefined') {
+            return false;
+        }
         return this.regexps.test.test(keyToTest);
     };
     Breakpoints.prototype.processKey = function (mediaQuery, keyToParse) {
@@ -122,6 +125,7 @@ var Breakpoints = /** @class */ (function () {
             if (!(this.breakpoints instanceof Array)) {
                 emitDebugMessage('JSON parse of given breakpoints did not yield expected array in format [["key", "value"], ...]');
                 this.breakpoints = [['undefined', '0px']];
+                return;
             }
         }
         this.breakpoints.forEach(function (item) {
@@ -312,7 +316,7 @@ var Css = /** @class */ (function () {
                 else {
                     //attempt to check if feature exists and run feature
                     var featureMatches = this.regexps.featureMatcher.exec(fragment);
-                    if (featureMatches && featureMatches[1] && featureMatches[1] in this.options.features) {
+                    if (this.options.features && featureMatches && featureMatches[1] && featureMatches[1] in this.options.features) {
                         this.options.features[featureMatches[1]](mediaQueryParts, featureMatches[2]);
                     }
                 }
@@ -363,4 +367,4 @@ var init = function (options) {
     return instances;
 };
 
-export { Css, get, init, refresh };
+export { Css, defaultOptions, get, init, refresh };

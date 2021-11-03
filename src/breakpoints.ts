@@ -1,7 +1,7 @@
 import {emitDebugMessage} from "./debugMessage";
 
 export class Breakpoints {
-    breakpoints: Array<Array<any>> = [];
+    breakpoints: Array<Array<any>> = [['undefined', '0px']];
     breakpointMap: any = {};
     keyMap: string[] = [];
     selector: string;
@@ -32,6 +32,9 @@ export class Breakpoints {
     };
 
     test(keyToTest: string): boolean {
+        if(this.breakpoints[0][0] === 'undefined'){
+            return false;
+        }
         return this.regexps.test.test(keyToTest);
     };
 
@@ -124,6 +127,7 @@ export class Breakpoints {
             if(!(this.breakpoints instanceof Array)){
                 emitDebugMessage('JSON parse of given breakpoints did not yield expected array in format [["key", "value"], ...]');
                 this.breakpoints = [['undefined', '0px']];
+                return;
             }
         }
 

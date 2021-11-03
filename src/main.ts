@@ -37,5 +37,6 @@ export {
     Css,
     init,
     refresh,
-    get
+    get,
+    defaultOptions
 };

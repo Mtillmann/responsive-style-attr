@@ -27,7 +27,7 @@ To enable responsive style on an element, just add a `data-rsa-style`-attribute 
 </script>
 ```
 
-The data-attribute object's keys are expanded to media queries while the values are made into selectors and style rules that are placed inside the media queries. The above example would expand to
+The data-attribute object's keys are expanded to media queries, the rules are put inside selectors that get wrapped by the media queries. The above example would expand to
 
 ```css
 @media all and (min-width: 255px) and (max-width: 512px) {
@@ -89,7 +89,7 @@ This list is picked up by the breakpoint parser and enables the following shortc
 
 | name         | syntax       | description                                                  |
 | ------------ | ------------ | ------------------------------------------------------------ |
-| breakpoint only   | `md`   | creates a media query that only matches viewports between the the given breakpoint and the next larger one (if a larger exists)  |
+| breakpoint only   | `md`   | creates a media query that only matches viewports between the given breakpoint and the next larger one (if a larger exists)  |
 | breakpoint up   | `xs-up`   | creates a media query that only matches viewports wider than the value of the given breakpoint |
 | breakpoint down | `lg-down` | creates a media query that only matches viewports narrower than the value of the given breakpoint |
 | breakpoint between | `md-to-xl` | creates a media query that only matches viewports between the two given breakpoints |
@@ -105,7 +105,7 @@ The breakpoint set variable for the element will be picked off this selector.
 
 #### `data-rsa-key[="default"]`
 
-Controls the name of the CSS variable, from which the breakpoint set is parsed:
+Controls the name of the CSS variable from which the breakpoint set is parsed:
 
 ```css
 html {
@@ -168,13 +168,14 @@ See `test/expansion.spec.js` for a few more examples.
 ## Options
 
 Pass options to the `RespStyleAttr.init`-function or to the `RespStyleAttr.Css`-constructor when creating instances manually.
+You can also set options for all instances by modifying the default options via `RespStyleAttr.defaultOptions`.
 
 | name | type | default | description |
 | --- | ---- | ---- | ---- |
 | debug | bool | false | controls if verbose information is written to console |
 | breakpointSelector | string | 'html' | the default breakpoint selector (compare `data-rsa-selector`) |
 | breakpointKey | string | 'default' | the default breakpoint key (compare `data-rsa-key`) |
-| selectorTemplate | function | ``s => `.rsa-${s}` `` | a small function that generates the selector that is used inside the generated stylesheet. Class is used by default but you could also create a data-attribute. You shouldn't create ids because the same selector may be used for multiple elements. |
+| selectorTemplate | function | ``s => `.rsa-${s}` `` | a small function that generates the selector used inside the generated stylesheet. Class is used by default but you could also create a data-attribute. Don't create ids because the same selector may be used for multiple elements. |
 | selectorPropertyAttacher | function | ``(node, hash) => node.classList.add(`rsa-${hash}`) `` | a function that actually attaches the property to the node. |
 | attachStyleNodeTo | string\|HtmlElement | 'head' | Selector or node to which the generated style node is attached |
 | scopedStyleNode | bool | true | controls whether the style node has a scoped attribute |
@@ -198,7 +199,7 @@ If you add more elements that use responsive style attributes to the document, y
 
 ### get
 
-`RespStyleAttr.get()` will yield a map of all instances, that are currently active. Pass an instance key to get only that instance.
+`RespStyleAttr.get()` will yield a map of all instances. Pass an instance key to get only that instance.
 
 ## Manually Creating Instances
 

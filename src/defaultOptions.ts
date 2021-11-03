@@ -1,5 +1,5 @@
 export var defaultOptions: any = {
-    debug: true,
+    debug: false,
     breakpointSelector: 'html',
     breakpointKey: 'default',
     selectorTemplate: (s: any): string => `.rsa-${s}`,
