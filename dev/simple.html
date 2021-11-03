@@ -8,7 +8,6 @@
     <title>simplest test</title>
 
     <script src="js/rsa.dev.umd.js"></script>
-    <link rel="stylesheet" href="css/bootstrap.css">
 
     <style>
         body{
@@ -36,13 +35,10 @@
     If you see a blue border, literal values work
 </div>
 
-<div data-rsa-style='{"@xs-up" : "border: 5px solid orange"}'>
-    If you see an orange border, breakpoint keys work
-</div>
-
 
 <script>
     window.addEventListener('load', () => {
+        RespStyleAttr.defaultOptions.debug = false;
         RespStyleAttr.init();
     })
 </script>

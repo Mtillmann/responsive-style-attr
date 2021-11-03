@@ -5,7 +5,7 @@
 })(this, (function (exports) { 'use strict';
 
     var defaultOptions = {
-        debug: true,
+        debug: false,
         breakpointSelector: 'html',
         breakpointKey: 'default',
         selectorTemplate: function (s) { return ".rsa-" + s; },
@@ -27,7 +27,7 @@
     var Breakpoints = /** @class */ (function () {
         function Breakpoints(options) {
             if (options === void 0) { options = {}; }
-            this.breakpoints = [];
+            this.breakpoints = [['undefined', '0px']];
             this.breakpointMap = {};
             this.keyMap = [];
             this.regexps = {};
@@ -46,6 +46,9 @@
             return this.breakpointMap[key] || null;
         };
         Breakpoints.prototype.test = function (keyToTest) {
+            if (this.breakpoints[0][0] === 'undefined') {
+                return false;
+            }
             return this.regexps.test.test(keyToTest);
         };
         Breakpoints.prototype.processKey = function (mediaQuery, keyToParse) {
@@ -128,6 +131,7 @@
                 if (!(this.breakpoints instanceof Array)) {
                     emitDebugMessage('JSON parse of given breakpoints did not yield expected array in format [["key", "value"], ...]');
                     this.breakpoints = [['undefined', '0px']];
+                    return;
                 }
             }
             this.breakpoints.forEach(function (item) {
@@ -318,14 +322,16 @@
                     else {
                         //attempt to check if feature exists and run feature
                         var featureMatches = this.regexps.featureMatcher.exec(fragment);
-                        if (featureMatches && featureMatches[1] && featureMatches[1] in this.options.features) {
+                        if (this.options.features && featureMatches && featureMatches[1] && featureMatches[1] in this.options.features) {
                             this.options.features[featureMatches[1]](mediaQueryParts, featureMatches[2]);
                         }
                     }
                 }
                 //compile mediaQuery;
-                mediaQueryPartsArray.push('@media ' + mediaQueryParts.media);
-                delete mediaQueryParts.media;
+                if (mediaQueryParts.media) {
+                    mediaQueryPartsArray.push(mediaQueryParts.media);
+                    delete mediaQueryParts.media;
+                }
                 for (var _i = 0, _a = Object.entries(mediaQueryParts); _i < _a.length; _i++) {
                     var _b = _a[_i], k = _b[0], v = _b[1];
                     if (v === true) {
@@ -338,7 +344,7 @@
                 }
                 mediaQueries.push(mediaQueryPartsArray.join(' and '));
             }
-            this.mediaQueries[key] = mediaQueries.join(',');
+            this.mediaQueries[key] = '@media ' + mediaQueries.join(', ');
             return this.mediaQueries[key];
         };
         return Css;
@@ -368,6 +374,7 @@
     };
 
     exports.Css = Css;
+    exports.defaultOptions = defaultOptions;
     exports.get = get;
     exports.init = init;
     exports.refresh = refresh;

@@ -196,7 +196,7 @@ export class Css {
                 } else {
                     //attempt to check if feature exists and run feature
                     let featureMatches = this.regexps.featureMatcher.exec(fragment);
-                    if (featureMatches! && featureMatches[1] && featureMatches[1] in this.options.features) {
+                    if (this.options.features && featureMatches! && featureMatches[1] && featureMatches[1] in this.options.features) {
                         this.options.features[featureMatches[1]](mediaQueryParts, featureMatches[2]);
                     }
                 }
