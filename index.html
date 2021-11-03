@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link rel="stylesheet" href="devices.css">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+</head>
+<body>
+
+<div class="container">
+    <div class="row">
+        <div class="col col-12">
+            <h1 class="display-1">Responsive Style Attribute Demo</h1>
+            <p class="lead">Create responsive styles on the fly for very specific
+            situations, based on content properties, targeting arbitrary media query features. </p>
+
+        </div>
+        <div class="col-12 col-lg-4 position-relative">
+            <h2 class="fw-light mt-4">iPhone X</h2>
+            <p class="small">
+
+            native: 375x812 (1125x2436), scaled:
+            <span class="scaled-x" data-native="375"></span>x<span class="scaled-y" data-native="812"></span> @ <span class="scaled-perc"></span>.
+            </p>
+            <div class="device-wrapper position-relative mt-4">
+
+                <div class="device device-iphone-x position-absolute">
+                    <div class="device-frame">
+                        <iframe class="device-content" src="iframe.html"></iframe>
+                    </div>
+                    <div class="device-stripe"></div>
+                    <div class="device-header"></div>
+                    <div class="device-sensors"></div>
+                    <div class="device-btns"></div>
+                    <div class="device-power"></div>
+                    <div class="device-home"></div>
+                </div>
+            </div>
+
+        </div>
+        <!--
+        <div class="col-12 col-lg-3 position-relative">
+            <h2 class="fw-light mt-4">Pixel 2 XL</h2>
+            renders at 412x823 (1440x2880) pixels, scaled to
+            <span class="scaled-x" data-native="412"></span>x<span class="scaled-y" data-native="823"></span> pixels
+            at <span class="scaled-perc"></span>.
+            <div class="device-wrapper position-relative mt-4">
+
+                <div class="device device-google-pixel-2-xl position-absolute">
+                    <div class="device-frame">
+                        <iframe class="device-content" src="iframe.html"></iframe>
+                    </div>
+                    <div class="device-stripe"></div>
+                    <div class="device-header"></div>
+                    <div class="device-sensors"></div>
+                    <div class="device-btns"></div>
+                    <div class="device-power"></div>
+                </div>
+            </div>
+
+        </div>
+        -->
+        <div class="col-12 col-lg-8 position-relative">
+            <h2 class="fw-light mt-4">iPad Pro 12.9&quot;</h2>
+            <p class="small">
+
+            native: 1024x1366 (2048x2732), scaled: <span class="scaled-x" data-native="1024"></span>x<span class="scaled-y" data-native="1366"></span> @ <span class="scaled-perc"></span>.
+            </p>
+            <div class="device-wrapper position-relative mt-4">
+
+                <div class="device device-ipad-pro device-spacegray position-absolute">
+                    <div class="device-frame">
+                        <iframe class="device-content" src="iframe.html"></iframe>
+                    </div>
+                    <div class="device-stripe"></div>
+                    <div class="device-header"></div>
+                    <div class="device-sensors"></div>
+                    <div class="device-btns"></div>
+                    <div class="device-power"></div>
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+        <div class="col-12 col-lg-12 position-relative">
+            <h2 class="fw-light mt-4">MacBook Pro 15&quot;</h2>
+            <p class="small">
+
+            native: 1680x1050 (2880x1800), scaled:
+            <span class="scaled-x" data-native="1680"></span>x<span class="scaled-y" data-native="1050"></span> at <span class="scaled-perc"></span>.
+            </p>
+
+
+            <div class="device-wrapper position-relative mt-4">
+
+                <div class="device device-macbook-pro device-spacegray position-absolute">
+                    <div class="device-frame">
+                        <iframe class="device-content" src="iframe.html"></iframe>
+                    </div>
+                    <div class="device-stripe"></div>
+                    <div class="device-header"></div>
+                    <div class="device-sensors"></div>
+                    <div class="device-btns"></div>
+                    <div class="device-power"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 my-5 py-5 small text-muted text-center">
+            devices taken from <a href="https://picturepan2.github.io/devices.css/">Yan Zhu's devices.css</a> and scaled to actual dimensions
+        </div>
+    </div>
+</div>
+
+
+<script>
+    window.addEventListener('DOMContentLoaded', function () {
+        const devices = document.querySelectorAll('.device'),
+            computedStyle = getComputedStyle(devices[0].parentNode.parentNode),
+            colPadding = parseFloat(computedStyle.paddingLeft) + parseFloat(computedStyle.paddingRight);
+
+
+        for (const node of devices) {
+            const parent = node.parentNode.parentNode,
+                spanX = parent.querySelector('.scaled-x'),
+                spanY = parent.querySelector('.scaled-y'),
+                spanPerc = parent.querySelector('.scaled-perc'),
+                wrapper = parent.querySelector('.device-wrapper'),
+                scalingFactor = (parent.clientWidth - colPadding) / node.clientWidth,
+                x = ((node.clientWidth - scalingFactor * node.clientWidth) * .5) * -1,
+                y = ((node.clientHeight - scalingFactor * node.clientHeight) * .5) * -1;
+            node.style.setProperty('transform', `scale(${scalingFactor})`);
+            node.style.setProperty('left', x + 'px')
+            node.style.setProperty('top', y + 'px')
+
+            spanX.textContent = Math.round(parseInt(spanX.dataset.native) * scalingFactor);
+            spanY.textContent = Math.round(parseInt(spanY.dataset.native) * scalingFactor);
+            spanPerc.textContent = Math.round(100 * scalingFactor) + '%';
+
+            wrapper.style.setProperty('height', (node.clientHeight * scalingFactor) + 'px');
+            wrapper.style.setProperty('width', (node.clientWidth * scalingFactor) + 'px');
+
+        }
+    });
+</script>
+
+</body>
+</html>
