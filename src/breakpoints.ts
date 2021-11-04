@@ -136,6 +136,7 @@ export class Breakpoints {
         let keysOnlyString = keys.join('|'),
             keysAndValuesString = keysOnlyString + '|\\d+\\w{2,3}';
 
+        //todo enable newer syntax with lt,lte,gt,gte(,eq)
         this.regexps = {
             test: new RegExp(`^(${keysAndValuesString})(?:\-(?:to|up|down)\-?)?(${keysAndValuesString})?$`),
             isOnly: new RegExp(`^(${keysOnlyString})?$`),

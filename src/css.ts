@@ -81,6 +81,17 @@ export class Css {
 
         node.dataset.rsaIsProcessed = 'true';
 
+        //todo remove class "rsa-uninitialized" from element, whether it
+        //has the class or not ***AFTER*** the styles have been deployed
+        //... so maybe add some other data attribute here, and match it
+        //after deploy, then remove the data attr and the class
+
+        //this should remove fouc. Also throw some events maybe...
+
+        //expose api to create stylesheets from strings like
+        //respStyleAttr.fromString('{json...}', options? ) -> [list of classes]
+        //then fetch stylesheet via respStyleAttr.get('...').getStyle() -> style with all styles of instances...
+        
         try {
             parsed = JSON.parse(input);
         } catch (e) {
