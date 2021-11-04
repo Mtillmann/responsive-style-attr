@@ -32,9 +32,7 @@ export class Breakpoints {
     };
 
     test(keyToTest: string): boolean {
-        if(this.breakpoints[0][0] === 'undefined'){
-            return false;
-        }
+
         return this.regexps.test.test(keyToTest);
     };
 
@@ -109,25 +107,22 @@ export class Breakpoints {
 
         if (this.options.breakpoints) {
             this.breakpoints = this.options.breakpoints;
-
         } else {
             computedStyle = getComputedStyle(document.querySelector(this.selector) || document.documentElement);
             breakpointDefinition = computedStyle.getPropertyValue(propertyName);
             if (!breakpointDefinition) {
                 emitDebugMessage(`No JSON breakpoint definition found for "${this.selector} { ${propertyName}: ... ; }"`, 'error')
-                return;
             }
             try {
                 this.breakpoints = JSON.parse(breakpointDefinition);
             } catch (error: any) {
                 emitDebugMessage(`JSON.parse failed for breakpoint definition of "${this.selector} { ${propertyName}: ... ; }": ${error.message}`, 'error')
                 emitDebugMessage(`JSON given "${breakpointDefinition}"`, 'error')
-                return;
+                this.breakpoints = [['undefined', '0px']];
             }
             if(!(this.breakpoints instanceof Array)){
                 emitDebugMessage('JSON parse of given breakpoints did not yield expected array in format [["key", "value"], ...]');
                 this.breakpoints = [['undefined', '0px']];
-                return;
             }
         }
 
