@@ -44,9 +44,6 @@ var Breakpoints = /** @class */ (function () {
         return this.breakpointMap[key] || null;
     };
     Breakpoints.prototype.test = function (keyToTest) {
-        if (this.breakpoints[0][0] === 'undefined') {
-            return false;
-        }
         return this.regexps.test.test(keyToTest);
     };
     Breakpoints.prototype.processKey = function (mediaQuery, keyToParse) {
@@ -116,7 +113,6 @@ var Breakpoints = /** @class */ (function () {
             breakpointDefinition = computedStyle.getPropertyValue(propertyName);
             if (!breakpointDefinition) {
                 emitDebugMessage("No JSON breakpoint definition found for \"" + this.selector + " { " + propertyName + ": ... ; }\"", 'error');
-                return;
             }
             try {
                 this.breakpoints = JSON.parse(breakpointDefinition);
@@ -124,12 +120,11 @@ var Breakpoints = /** @class */ (function () {
             catch (error) {
                 emitDebugMessage("JSON.parse failed for breakpoint definition of \"" + this.selector + " { " + propertyName + ": ... ; }\": " + error.message, 'error');
                 emitDebugMessage("JSON given \"" + breakpointDefinition + "\"", 'error');
-                return;
+                this.breakpoints = [['undefined', '0px']];
             }
             if (!(this.breakpoints instanceof Array)) {
                 emitDebugMessage('JSON parse of given breakpoints did not yield expected array in format [["key", "value"], ...]');
                 this.breakpoints = [['undefined', '0px']];
-                return;
             }
         }
         this.breakpoints.forEach(function (item) {
