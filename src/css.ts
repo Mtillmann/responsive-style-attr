@@ -91,7 +91,7 @@ export class Css {
         //expose api to create stylesheets from strings like
         //respStyleAttr.fromString('{json...}', options? ) -> [list of classes]
         //then fetch stylesheet via respStyleAttr.get('...').getStyle() -> style with all styles of instances...
-        
+
         try {
             parsed = JSON.parse(input);
         } catch (e) {

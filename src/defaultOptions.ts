@@ -8,5 +8,7 @@ export var defaultOptions: any = {
     scopedStyleNode: true,
     breakpoints : null,
     ignoreDOM: false,
-    alwaysPrependMediatype: true
+    alwaysPrependMediatype: true,
+    classicMinMaxSubtract : 0.02,
+    useMQL4RangeContext : false
 }
