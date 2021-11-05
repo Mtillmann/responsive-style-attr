@@ -33,6 +33,7 @@
     "typescript": "^4.4.3"
   },
   "scripts": {
+    "merge" : "git checkout dev -- dist src README.md package.json package-lock.json",
     "build": "terser dist/resp-style-attr.umd.js --compress --mangle --output dist/resp-style-attr.umd.min.js",
     "ts:build": "rollup -c",
     "ts:dev": "rollup --config \"rollup.dev-config.js\" -w",
