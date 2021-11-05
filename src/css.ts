@@ -186,7 +186,7 @@ export class Css {
         }
 
         let queries = key.split('@,@'),
-            mediaQueries:string[] = [];
+            mediaQueries: string[] = [];
         for (let queryIndex = 0; queryIndex < queries.length; queryIndex++) {
 
             let keyParts = queries[queryIndex].split('@').filter(s => s.trim() !== ''),
@@ -204,6 +204,9 @@ export class Css {
                     mediaQueryParts.orientation = fragment;
                 } else if (this.breakpoints.test(fragment)) {
                     this.breakpoints.processKey(mediaQueryParts, fragment);
+                } else if (fragment[0] === '(') {
+                    mediaQueryParts[':' + fragment] = fragment.slice(1,-1);
+
                 } else {
                     //attempt to check if feature exists and run feature
                     let featureMatches = this.regexps.featureMatcher.exec(fragment);
@@ -214,7 +217,7 @@ export class Css {
             }
 
             //compile mediaQuery;
-            if(mediaQueryParts.media){
+            if (mediaQueryParts.media) {
                 mediaQueryPartsArray.push(mediaQueryParts.media);
                 delete mediaQueryParts.media;
             }

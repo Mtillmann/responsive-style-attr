@@ -341,6 +341,9 @@ var Css = /** @class */ (function () {
                 else if (this.breakpoints.test(fragment)) {
                     this.breakpoints.processKey(mediaQueryParts, fragment);
                 }
+                else if (fragment[0] === '(') {
+                    mediaQueryParts[':' + fragment] = fragment.slice(1, -1);
+                }
                 else {
                     //attempt to check if feature exists and run feature
                     var featureMatches = this.regexps.featureMatcher.exec(fragment);

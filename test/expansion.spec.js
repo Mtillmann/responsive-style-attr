@@ -139,6 +139,9 @@ describe("Key To Media Query Expansion", function () {
             ['unset(prefers-reduced-motion)', '@media all'],
             ['set(prefers-reduced-motion)@,@set(prefers-reduced-data)', '@media all and (prefers-reduced-motion), all and (prefers-reduced-data)'],
             ['keyValue(-webkit-min-device-pixel-ratio,2)@,@keyValue(min-resolution,2dppx)', '@media all and (-webkit-min-device-pixel-ratio: 2), all and (min-resolution: 2dppx)'],
+            ['(prefers-reduced-motion)','@media all and (prefers-reduced-motion)'],
+            ['1000px@(prefers-reduced-motion)','@media all and (min-width: 1000px) and (prefers-reduced-motion)'],
+            ['1000px@(prefers-color-scheme: dark)','@media all and (min-width: 1000px) and (prefers-color-scheme: dark)'],
         ],
         mql4rcKeysToExpand = [
             ['lt-500px', '@media all and (width < 500px)'],
