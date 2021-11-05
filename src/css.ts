@@ -31,6 +31,7 @@ export class Css {
 
     constructor(options: any = {}) {
         this.options = Object.assign({}, defaultOptions, options);
+
         //todo use spread syntax
         let instanceKey = `${this.options.breakpointKey}_${this.options.breakpointSelector}`;
 

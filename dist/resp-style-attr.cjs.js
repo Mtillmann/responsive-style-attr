@@ -13,7 +13,7 @@ var defaultOptions = {
     breakpoints: null,
     ignoreDOM: false,
     alwaysPrependMediatype: true,
-    classicMinMaxSubtract: 0.02,
+    minMaxSubtract: 0.02,
     useMQL4RangeContext: false
 };
 
@@ -115,14 +115,14 @@ var Breakpoints = /** @class */ (function () {
             if (lower) {
                 var value = parseFloat(lower), unit = lower.replace(String(value), '');
                 if (compareEquality) {
-                    value -= this.options.classicMinMaxSubtract;
+                    value -= this.options.minMaxSubtract;
                 }
                 mediaQuery['min-width'] = value + unit;
             }
             if (upper) {
                 var value = parseFloat(upper), unit = upper.replace(String(value), '');
                 if (!compareEquality) {
-                    value -= this.options.classicMinMaxSubtract;
+                    value -= this.options.minMaxSubtract;
                 }
                 mediaQuery['max-width'] = value + unit;
             }

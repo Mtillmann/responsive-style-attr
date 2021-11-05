@@ -1,6 +1,6 @@
 # Responsive Style Attributes
 
-Control the responsive style of html elements without creating one-off classes and media queries in your stylesheets.
+Control the responsive style of html elements without creating one-off classes and media queries in your stylesheets. [Here's a small demo](https://mtillmann.github.io/responsive-style-attr/). 
 
 ## Installation
 
@@ -30,7 +30,7 @@ To enable responsive style on an element, just add a `data-rsa-style`-attribute 
 The data-attribute object's keys are expanded to media queries, the rules are put inside selectors that get wrapped by the media queries. The above example would expand to
 
 ```css
-@media all and (min-width: 255px) and (max-width: 512px) {
+@media all and (min-width: 255px) and (max-width: 511.98px) {
     .rsa-7063658802351566 {
         font-size: 1.5rem
     }
@@ -55,25 +55,44 @@ The media query shorthand syntax lets you combine multiple media query features,
 }
 
 /* "255px-to-500px@portrait" expands to: */
-@media all and (min-width: 255px) and (max-width: 500px) and (orientation: portrait) {
+@media all and (min-width: 255px) and (max-width: 499.98px) and (orientation: portrait) {
 }
 
 /* ... see the expansion spec file for more examples */
 ```
+> **Why subtract .02px?** Browsers don’t currently support [range context queries](https://www.w3.org/TR/mediaqueries-4/#range-context), so we work around the limitations of [min- and max- prefixes](https://www.w3.org/TR/mediaqueries-4/#mq-min-max) and viewports with fractional widths (which can occur under certain conditions on high-dpi devices, for instance) by using values with higher precision.  
+
+[from the bootstrap 5.1 docs](https://getbootstrap.com/docs/5.1/layout/breakpoints/#media-queries)
 
 Out of the box, this are supported query shortcuts in the object keys:
 
 | name         | syntax       | description                                                  |
 | ------------ | ------------ | ------------------------------------------------------------ |
-| media type   | `screen`     | creates a media query that matches one or more given media types (screen,all,print,speech) |
-| orientation   | `portrait`     | creates a media query that matches given orientation (`portrait` or `landscape`) |
-| literal up   | `800px-up`   | creates a media query that only matches viewports wider than the given value and unit |
-| literal down | `500px-down` | creates a media query that only matches viewports narrower than the given value and unit |
-| literal between | `500px-to-1000px` | creates a media query that only matches viewports between the two given values |
+| media type   | `screen`     | matches one or more given media types (screen,all,print,speech), _is expected as first feature_ in shorthand! |
+| orientation   | `portrait`     | matches given orientation (`portrait` or `landscape`) |
+| literal up  | `800px-up` or `gt-800px`  | matches viewports wider than the given value and unit |
+| literal down | `500px-down` or `lt-500px` | matches viewports narrower than the given value and unit |
+| literal between | `500px-to-1000px` | matches viewports between the two given values |
+| lte | `lte-500px` | matches viewports narrower than _or equal to_ given value | 
+| gte | `gte-500px` | matches viewports wider than _or equal to_ given value | 
 
 ## `OR` for different feature sets
 
 You can use `@,@` to split a shorthand key into multiple media queries. This is useful when you want to address vendor-specific features for the same style, for example `-webkit-min-device-pixel-ratio` and `min-resolution`.
+
+## Literal Features
+
+To use a media query feature _as is_, just write it wrapped in parentheses, like this:
+```css
+/* "lt-1000px@(prefers-color-scheme: dark)" would expand to: */
+@media all and (max-width: 999.98px) and (prefers-color-scheme: dark) {
+  /* .... */
+}
+```
+## Negations and MQL4 Boolean Operators
+
+Neither is currently implemented but may be at a later time.
+
 
 ## Using Breakpoint Sets in Shortcuts
 
@@ -89,11 +108,14 @@ This list is picked up by the breakpoint parser and enables the following shortc
 
 | name         | syntax       | description                                                  |
 | ------------ | ------------ | ------------------------------------------------------------ |
-| breakpoint only   | `md`   | creates a media query that only matches viewports between the given breakpoint and the next larger one (if a larger exists)  |
-| breakpoint up   | `xs-up`   | creates a media query that only matches viewports wider than the value of the given breakpoint |
-| breakpoint down | `lg-down` | creates a media query that only matches viewports narrower than the value of the given breakpoint |
-| breakpoint between | `md-to-xl` | creates a media query that only matches viewports between the two given breakpoints |
-| mixed between | `md-to-1000px`, `400px-to-xl` | creates a media query that only matches viewports between the given breakpoint and the literal value |
+| breakpoint only   | `md`   | matches viewports between the given breakpoint and the next larger one (if a larger exists)  |
+| breakpoint up   | `xs-up` or `gt-xs`  | matches viewports wider than the value of the given breakpoint |
+| breakpoint down | `lg-down` or `lt-xs` | matches viewports narrower than the value of the given breakpoint |
+| breakpoint between | `md-to-xl` | matches viewports between the two given breakpoints |
+| mixed between | `md-to-1000px`, `400px-to-xl` | matches viewports between the given breakpoint and the literal value |
+| lte | `lte-500px` | matches viewports narrower than _or equal to_ given breakpoint | 
+| gte | `gte-500px` | matches viewports wider than _or equal to_ given breakpoint | 
+
 
 ### Controlling Breakpoint Sets
 
@@ -138,15 +160,6 @@ let options = {
             if (!re.test(userAgent)) {
                 mediaQuery.media = 'none';
             }
-        },
-        wkmdpr: function (mediaQuery, devicePixelRatio) {
-            // sets the device pixel ratio feature on media query
-            mediaQuery['-webkit-min-device-pixel-ratio'] = devicePixelRatio;
-        },
-        keyValue: function (mediaQuery, args) {
-            // sets anything you pass on the media query
-            const [key, value] = args.split(',');
-            mediaQuery[key] = value;
         }
     }
 }
@@ -157,11 +170,11 @@ The custom features would be used like this:
 ```html
 <p data-rsa-style='{"androidOnly" : "border: 1px solid #000;"}'>I have a border on android devices</p>
 <p data-rsa-style='{"usMustMatch(ios)" : "border: 1px solid #000;"}'>I have a border on iOs devices</p>
-<p data-rsa-style='{"wkmdpr(2)" : "border: 1px solid #000;"}'>I have a border on devices that have a webkit-min-device-pixel-ratio of at least 2</p>
-<p data-rsa-style='{"keyValue(min-resolution,2dppx)" : "border: 1px solid #000;"}'>I have a border on devices that have a min-resolution of 2dppx</p>
 ```
 
-If you set a feature to `true` it will be written without a value. This is useful for features like `prefers-reduced-motion` where only the feature key is used in the query. Setting a feature to `false` will remove it from the final media query. A feature function can modify, set or remove more than one media query feature.
+If you set a feature to `true` it will be written without a value. This is useful for setting features like `prefers-reduced-motion` where only the feature key is used in the query. Setting a feature to `false` will remove it from the final media query. A feature function can modify, set or remove more than one media query feature.
+
+If you prefix the feature key with `:` the key will be omitted from the final media query and only the value will be used. This can be handy for things like level 4 range context where the expression is not in `key: value` format.
 
 See `test/expansion.spec.js` for a few more examples.
 
@@ -182,6 +195,8 @@ You can also set options for all instances by modifying the default options via 
 | breakpoints | Array\|null | null | Alternative way of passing a breakpoint set to an instances (see "Breakpoint sets" for more information) |
 | ignoreDOM | bool | false | instructs the instance to ignore the dom, only used for testing |
 | alwaysPrependMediatype | bool | true | controls if the media type is always set on generated media queries |
+| minMaxSubtract | float | 0.02 | value that is subtracted from values in certain situations (see notice above) | 
+| useMQL4RangeContext | bool | false | if enabled, screen width query features will be generated in new syntax |
 
 ## API
 

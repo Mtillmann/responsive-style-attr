@@ -61,7 +61,7 @@ describe("Key To Media Query Expansion", function () {
             let value = parseFloat(input),
                 unit = input.replace(String(value), '');
 
-            return (value - RespStyleAttr.defaultOptions.classicMinMaxSubtract) + unit;
+            return (value - RespStyleAttr.defaultOptions.minMaxSubtract) + unit;
         },
         keysToExpand = [
             ['lt-md', `@media all and (max-width: ${substractedMaxValue(md)})`],

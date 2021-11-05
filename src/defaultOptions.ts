@@ -9,6 +9,6 @@ export var defaultOptions: any = {
     breakpoints : null,
     ignoreDOM: false,
     alwaysPrependMediatype: true,
-    classicMinMaxSubtract : 0.02,
+    minMaxSubtract : 0.02,
     useMQL4RangeContext : false
 }

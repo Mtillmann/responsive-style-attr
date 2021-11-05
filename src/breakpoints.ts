@@ -96,7 +96,6 @@ export class Breakpoints {
             }
         }
 
-
         if (this.options.useMQL4RangeContext) {
             if (lower && upper) {
                 mediaQuery[':mql4rc'] = `${lower} < width < ${upper}`;
@@ -112,7 +111,7 @@ export class Breakpoints {
                     unit = lower.replace(String(value), '');
 
                 if (compareEquality) {
-                    value -= this.options.classicMinMaxSubtract;
+                    value -= this.options.minMaxSubtract;
                 }
 
                 mediaQuery['min-width'] = value + unit;
@@ -122,7 +121,7 @@ export class Breakpoints {
                     unit = upper.replace(String(value), '');
 
                 if (!compareEquality) {
-                    value -= this.options.classicMinMaxSubtract;
+                    value -= this.options.minMaxSubtract;
                 }
 
                 mediaQuery['max-width'] = value + unit;

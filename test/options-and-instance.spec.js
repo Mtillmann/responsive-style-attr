@@ -221,6 +221,34 @@ describe('Tests Css Constructor options and methods', function () {
         return expect(nodes.length).toBe(0);
     });
 
+    it('creates mql4 query features', function () {
+        const css = new RespStyleAttr.Css({
+            breakpointKey : 'mql4-test',
+            ignoreDOM: true,
+            useMQL4RangeContext: true
+        });
+        expect(css.keyToMediaQuery('lt-500px')).toBe('@media all and (width < 500px)');
+    });
+
+    it('applies subtraction', function () {
+        const css = new RespStyleAttr.Css({
+            breakpointKey : 'subtract-test',
+            ignoreDOM: true,
+            minMaxSubtract: 5
+        });
+        expect(css.keyToMediaQuery('lt-500px')).toBe('@media all and (max-width: 495px)');
+    });
+
+
+    it('doesn\'t apply media when not set', function () {
+        const css = new RespStyleAttr.Css({
+            breakpointKey : 'no-default-media-test',
+            ignoreDOM: true,
+            alwaysPrependMediatype : false
+        });
+        expect(css.keyToMediaQuery('500px')).toBe('@media (min-width: 500px)');
+    });
+
     //todo check handling of prepend mediatype
 
 });
