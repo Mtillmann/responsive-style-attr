@@ -31,6 +31,7 @@ export class Css {
 
     constructor(options: any = {}) {
         this.options = Object.assign({}, defaultOptions, options);
+
         //todo use spread syntax
         let instanceKey = `${this.options.breakpointKey}_${this.options.breakpointSelector}`;
 
@@ -80,6 +81,17 @@ export class Css {
             info: object[] = [];
 
         node.dataset.rsaIsProcessed = 'true';
+
+        //todo remove class "rsa-uninitialized" from element, whether it
+        //has the class or not ***AFTER*** the styles have been deployed
+        //... so maybe add some other data attribute here, and match it
+        //after deploy, then remove the data attr and the class
+
+        //this should remove fouc. Also throw some events maybe...
+
+        //expose api to create stylesheets from strings like
+        //respStyleAttr.fromString('{json...}', options? ) -> [list of classes]
+        //then fetch stylesheet via respStyleAttr.get('...').getStyle() -> style with all styles of instances...
 
         try {
             parsed = JSON.parse(input);
@@ -175,7 +187,7 @@ export class Css {
         }
 
         let queries = key.split('@,@'),
-            mediaQueries:string[] = [];
+            mediaQueries: string[] = [];
         for (let queryIndex = 0; queryIndex < queries.length; queryIndex++) {
 
             let keyParts = queries[queryIndex].split('@').filter(s => s.trim() !== ''),
@@ -193,6 +205,9 @@ export class Css {
                     mediaQueryParts.orientation = fragment;
                 } else if (this.breakpoints.test(fragment)) {
                     this.breakpoints.processKey(mediaQueryParts, fragment);
+                } else if (fragment[0] === '(') {
+                    mediaQueryParts[':' + fragment] = fragment.slice(1,-1);
+
                 } else {
                     //attempt to check if feature exists and run feature
                     let featureMatches = this.regexps.featureMatcher.exec(fragment);
@@ -203,7 +218,7 @@ export class Css {
             }
 
             //compile mediaQuery;
-            if(mediaQueryParts.media){
+            if (mediaQueryParts.media) {
                 mediaQueryPartsArray.push(mediaQueryParts.media);
                 delete mediaQueryParts.media;
             }
@@ -212,7 +227,8 @@ export class Css {
                 if (v === true) {
                     mediaQueryPartsArray.push(`(${k})`);
                 } else if (v !== false) {
-                    mediaQueryPartsArray.push(`(${k}: ${v})`);
+                    let key = k[0] === ':' ? '' : `${k}: `;
+                    mediaQueryPartsArray.push(`(${key}${v})`);
                 }
                 //do nothing
             }

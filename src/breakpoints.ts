@@ -15,7 +15,6 @@ export class Breakpoints {
         this.key = this.options.breakpointKey;
 
 
-
         this.getBreakpoints();
     }
 
@@ -32,17 +31,22 @@ export class Breakpoints {
     };
 
     test(keyToTest: string): boolean {
-
         return this.regexps.test.test(keyToTest);
     };
 
     processKey(mediaQuery: any, keyToParse: string) {
         const isOnly = this.regexps.isOnly.test(keyToParse),
-            isUp = this.regexps.isUp.test(keyToParse),
-            isDown = this.regexps.isDown.test(keyToParse),
+            isGT = this.regexps.isGT.test(keyToParse),
+            isLT = this.regexps.isLT.test(keyToParse),
             isBetween = this.regexps.isBetween.test(keyToParse),
             usesOnlyBreakpointKeys: RegExpExecArray | null = this.regexps.usesOnlyBreakpointKeys.exec(keyToParse),
-            usesMixedValues: RegExpExecArray | null = this.regexps.usesMixedValues.exec(keyToParse);
+            usesMixedValues: RegExpExecArray | null = this.regexps.usesMixedValues.exec(keyToParse),
+            compareEquality: boolean = /^\wte/.test(keyToParse);
+
+        //todo dont run all regexps at once
+        //todo implement run order in options
+
+        //todo media queries must also match \wte? at beginning
 
         let upper: string | null = null,
             lower: string | null = null;
@@ -67,7 +71,7 @@ export class Breakpoints {
                     //if the largest is used, there is no "next" use as max-width
                     upper = next[1];
                 }
-            } else if (isDown) {
+            } else if (isLT) {
                 upper = lower;
                 lower = null;
             } else if (isBetween) {
@@ -75,14 +79,16 @@ export class Breakpoints {
             }
 
         } else {
+
             let actualBreakpoints: RegExpExecArray | null = this.regexps.actualBreakpoints.exec(keyToParse);
+
             if (actualBreakpoints!) {
                 if (isBetween) {
                     lower = actualBreakpoints[1];
                     upper = actualBreakpoints[2];
-                } else if (isDown) {
+                } else if (isLT) {
                     upper = actualBreakpoints[3];
-                } else if (isUp) {
+                } else if (isGT) {
                     lower = actualBreakpoints[3];
                 } else {
                     lower = actualBreakpoints[0];
@@ -90,13 +96,38 @@ export class Breakpoints {
             }
         }
 
-        if (lower) {
-            mediaQuery['min-width'] = lower;
-        }
-        if (upper) {
-            mediaQuery['max-width'] = upper;
+        if (this.options.useMQL4RangeContext) {
+            if (lower && upper) {
+                mediaQuery[':mql4rc'] = `${lower} < width < ${upper}`;
+            } else if (lower) {
+                mediaQuery[':mql4rc'] = `width >${compareEquality ? '=' : ''} ${lower}`;
+            } else if (upper) {
+                mediaQuery[':mql4rc'] = `width <${compareEquality ? '=' : ''} ${upper}`;
+            }
+        } else {
 
+            if (lower) {
+                let value = parseFloat(lower),
+                    unit = lower.replace(String(value), '');
+
+                if (compareEquality) {
+                    value -= this.options.minMaxSubtract;
+                }
+
+                mediaQuery['min-width'] = value + unit;
+            }
+            if (upper) {
+                let value = parseFloat(upper),
+                    unit = upper.replace(String(value), '');
+
+                if (!compareEquality) {
+                    value -= this.options.minMaxSubtract;
+                }
+
+                mediaQuery['max-width'] = value + unit;
+            }
         }
+
     };
 
     getBreakpoints() {
@@ -120,7 +151,7 @@ export class Breakpoints {
                 emitDebugMessage(`JSON given "${breakpointDefinition}"`, 'error')
                 this.breakpoints = [['undefined', '0px']];
             }
-            if(!(this.breakpoints instanceof Array)){
+            if (!(this.breakpoints instanceof Array)) {
                 emitDebugMessage('JSON parse of given breakpoints did not yield expected array in format [["key", "value"], ...]');
                 this.breakpoints = [['undefined', '0px']];
             }
@@ -137,21 +168,16 @@ export class Breakpoints {
             keysAndValuesString = keysOnlyString + '|\\d+\\w{2,3}';
 
         this.regexps = {
-            test: new RegExp(`^(${keysAndValuesString})(?:\-(?:to|up|down)\-?)?(${keysAndValuesString})?$`),
-            isOnly: new RegExp(`^(${keysOnlyString})?$`),
-            isUp: new RegExp(`^(${keysAndValuesString})\-up?$`),
-            isDown: new RegExp(`^(${keysAndValuesString})\-down?$`),
-            isBetween: new RegExp(`^(${keysAndValuesString})-to-(${keysAndValuesString})?$`),
-            actualBreakpoints: new RegExp('^(?:(\\d+\\w{2,3})-to-(\\d+\\w{2,3})|(\\d+\\w{2,3})(?:\-\\w{2,4})?)$'),
-            usesOnlyBreakpointKeys: new RegExp(`^(${keysOnlyString})(?:\-(?:to|up|down)\-?)?(${keysOnlyString})?$`),
+            test: new RegExp(`^([lg]te?-?)?(${keysAndValuesString})(-(to|up|down)-?)?(${keysAndValuesString})?$`),
+            isOnly: new RegExp(`^(${keysOnlyString})$`),
+            isGT: new RegExp(`^(gte?-(${keysAndValuesString}))|((${keysAndValuesString})\-up)$`),
+            isLT: new RegExp(`^(lte?-(${keysAndValuesString}))|((${keysAndValuesString})\-down)$`),
+            isBetween: new RegExp(`^(${keysAndValuesString})-to-(${keysAndValuesString})$`),
+            actualBreakpoints: new RegExp('^(?:(\\d+\\w{2,3})-to-(\\d+\\w{2,3})|(?:(?:\\wte?-)?(\\d+\\w{2,3}))(?:-\\w{2,4})?)$'),
+            usesOnlyBreakpointKeys: new RegExp(`^(?:[lg]te?-?)?(${keysOnlyString})(?:-(?:to|up|down)-?)?(${keysOnlyString})?$`),
             usesMixedValues: new RegExp(`^(?:(${keysOnlyString})-to-(\\d+\\w{2,3})|(\\d+\\w{2,3})-to-(${keysOnlyString}))$`),
-
-            /*
-            //keyMatch: new RegExp(`^((${keyString})|((${keyString})\-(up|down))|((${keyString})-to-(${keyString})))(\:?(portrait|landscape))?$`),
-            orientation: /(landscape|portrait)$/
-
-             */
         };
+
 
         return this.breakpoints;
     }

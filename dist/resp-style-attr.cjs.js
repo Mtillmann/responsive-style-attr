@@ -12,7 +12,9 @@ var defaultOptions = {
     scopedStyleNode: true,
     breakpoints: null,
     ignoreDOM: false,
-    alwaysPrependMediatype: true
+    alwaysPrependMediatype: true,
+    minMaxSubtract: 0.02,
+    useMQL4RangeContext: false
 };
 
 function emitDebugMessage(data, type) {
@@ -47,7 +49,10 @@ var Breakpoints = /** @class */ (function () {
         return this.regexps.test.test(keyToTest);
     };
     Breakpoints.prototype.processKey = function (mediaQuery, keyToParse) {
-        var isOnly = this.regexps.isOnly.test(keyToParse), isUp = this.regexps.isUp.test(keyToParse), isDown = this.regexps.isDown.test(keyToParse), isBetween = this.regexps.isBetween.test(keyToParse), usesOnlyBreakpointKeys = this.regexps.usesOnlyBreakpointKeys.exec(keyToParse), usesMixedValues = this.regexps.usesMixedValues.exec(keyToParse);
+        var isOnly = this.regexps.isOnly.test(keyToParse), isGT = this.regexps.isGT.test(keyToParse), isLT = this.regexps.isLT.test(keyToParse), isBetween = this.regexps.isBetween.test(keyToParse), usesOnlyBreakpointKeys = this.regexps.usesOnlyBreakpointKeys.exec(keyToParse), usesMixedValues = this.regexps.usesMixedValues.exec(keyToParse), compareEquality = /^\wte/.test(keyToParse);
+        //todo dont run all regexps at once
+        //todo implement run order in options
+        //todo media queries must also match \wte? at beginning
         var upper = null, lower = null;
         if (usesMixedValues) {
             if (usesMixedValues[1] && usesMixedValues[2]) {
@@ -69,7 +74,7 @@ var Breakpoints = /** @class */ (function () {
                     upper = next[1];
                 }
             }
-            else if (isDown) {
+            else if (isLT) {
                 upper = lower;
                 lower = null;
             }
@@ -84,10 +89,10 @@ var Breakpoints = /** @class */ (function () {
                     lower = actualBreakpoints[1];
                     upper = actualBreakpoints[2];
                 }
-                else if (isDown) {
+                else if (isLT) {
                     upper = actualBreakpoints[3];
                 }
-                else if (isUp) {
+                else if (isGT) {
                     lower = actualBreakpoints[3];
                 }
                 else {
@@ -95,11 +100,32 @@ var Breakpoints = /** @class */ (function () {
                 }
             }
         }
-        if (lower) {
-            mediaQuery['min-width'] = lower;
+        if (this.options.useMQL4RangeContext) {
+            if (lower && upper) {
+                mediaQuery[':mql4rc'] = lower + " < width < " + upper;
+            }
+            else if (lower) {
+                mediaQuery[':mql4rc'] = "width >" + (compareEquality ? '=' : '') + " " + lower;
+            }
+            else if (upper) {
+                mediaQuery[':mql4rc'] = "width <" + (compareEquality ? '=' : '') + " " + upper;
+            }
         }
-        if (upper) {
-            mediaQuery['max-width'] = upper;
+        else {
+            if (lower) {
+                var value = parseFloat(lower), unit = lower.replace(String(value), '');
+                if (compareEquality) {
+                    value -= this.options.minMaxSubtract;
+                }
+                mediaQuery['min-width'] = value + unit;
+            }
+            if (upper) {
+                var value = parseFloat(upper), unit = upper.replace(String(value), '');
+                if (!compareEquality) {
+                    value -= this.options.minMaxSubtract;
+                }
+                mediaQuery['max-width'] = value + unit;
+            }
         }
     };
     Breakpoints.prototype.getBreakpoints = function () {
@@ -134,19 +160,14 @@ var Breakpoints = /** @class */ (function () {
         });
         var keysOnlyString = keys.join('|'), keysAndValuesString = keysOnlyString + '|\\d+\\w{2,3}';
         this.regexps = {
-            test: new RegExp("^(" + keysAndValuesString + ")(?:-(?:to|up|down)-?)?(" + keysAndValuesString + ")?$"),
-            isOnly: new RegExp("^(" + keysOnlyString + ")?$"),
-            isUp: new RegExp("^(" + keysAndValuesString + ")-up?$"),
-            isDown: new RegExp("^(" + keysAndValuesString + ")-down?$"),
-            isBetween: new RegExp("^(" + keysAndValuesString + ")-to-(" + keysAndValuesString + ")?$"),
-            actualBreakpoints: new RegExp('^(?:(\\d+\\w{2,3})-to-(\\d+\\w{2,3})|(\\d+\\w{2,3})(?:\-\\w{2,4})?)$'),
-            usesOnlyBreakpointKeys: new RegExp("^(" + keysOnlyString + ")(?:-(?:to|up|down)-?)?(" + keysOnlyString + ")?$"),
+            test: new RegExp("^([lg]te?-?)?(" + keysAndValuesString + ")(-(to|up|down)-?)?(" + keysAndValuesString + ")?$"),
+            isOnly: new RegExp("^(" + keysOnlyString + ")$"),
+            isGT: new RegExp("^(gte?-(" + keysAndValuesString + "))|((" + keysAndValuesString + ")-up)$"),
+            isLT: new RegExp("^(lte?-(" + keysAndValuesString + "))|((" + keysAndValuesString + ")-down)$"),
+            isBetween: new RegExp("^(" + keysAndValuesString + ")-to-(" + keysAndValuesString + ")$"),
+            actualBreakpoints: new RegExp('^(?:(\\d+\\w{2,3})-to-(\\d+\\w{2,3})|(?:(?:\\wte?-)?(\\d+\\w{2,3}))(?:-\\w{2,4})?)$'),
+            usesOnlyBreakpointKeys: new RegExp("^(?:[lg]te?-?)?(" + keysOnlyString + ")(?:-(?:to|up|down)-?)?(" + keysOnlyString + ")?$"),
             usesMixedValues: new RegExp("^(?:(" + keysOnlyString + ")-to-(\\d+\\w{2,3})|(\\d+\\w{2,3})-to-(" + keysOnlyString + "))$"),
-            /*
-            //keyMatch: new RegExp(`^((${keyString})|((${keyString})\-(up|down))|((${keyString})-to-(${keyString})))(\:?(portrait|landscape))?$`),
-            orientation: /(landscape|portrait)$/
-
-             */
         };
         return this.breakpoints;
     };
@@ -214,6 +235,14 @@ var Css = /** @class */ (function () {
     Css.prototype.add = function (node) {
         var input = node.dataset.rsaStyle || '', parsed = {}, info = [];
         node.dataset.rsaIsProcessed = 'true';
+        //todo remove class "rsa-uninitialized" from element, whether it
+        //has the class or not ***AFTER*** the styles have been deployed
+        //... so maybe add some other data attribute here, and match it
+        //after deploy, then remove the data attr and the class
+        //this should remove fouc. Also throw some events maybe...
+        //expose api to create stylesheets from strings like
+        //respStyleAttr.fromString('{json...}', options? ) -> [list of classes]
+        //then fetch stylesheet via respStyleAttr.get('...').getStyle() -> style with all styles of instances...
         try {
             parsed = JSON.parse(input);
         }
@@ -312,6 +341,9 @@ var Css = /** @class */ (function () {
                 else if (this.breakpoints.test(fragment)) {
                     this.breakpoints.processKey(mediaQueryParts, fragment);
                 }
+                else if (fragment[0] === '(') {
+                    mediaQueryParts[':' + fragment] = fragment.slice(1, -1);
+                }
                 else {
                     //attempt to check if feature exists and run feature
                     var featureMatches = this.regexps.featureMatcher.exec(fragment);
@@ -331,7 +363,8 @@ var Css = /** @class */ (function () {
                     mediaQueryPartsArray.push("(" + k + ")");
                 }
                 else if (v !== false) {
-                    mediaQueryPartsArray.push("(" + k + ": " + v + ")");
+                    var key_1 = k[0] === ':' ? '' : k + ": ";
+                    mediaQueryPartsArray.push("(" + key_1 + v + ")");
                 }
                 //do nothing
             }
