@@ -15,7 +15,6 @@ export class Breakpoints {
         this.key = this.options.breakpointKey;
 
 
-
         this.getBreakpoints();
     }
 
@@ -42,15 +41,12 @@ export class Breakpoints {
             isBetween = this.regexps.isBetween.test(keyToParse),
             usesOnlyBreakpointKeys: RegExpExecArray | null = this.regexps.usesOnlyBreakpointKeys.exec(keyToParse),
             usesMixedValues: RegExpExecArray | null = this.regexps.usesMixedValues.exec(keyToParse),
-            compareEquality : boolean =  /^\wte/.test(keyToParse);
+            compareEquality: boolean = /^\wte/.test(keyToParse);
 
         //todo dont run all regexps at once
         //todo implement run order in options
 
-        console.log(isLT)
-        mediaQuery.isLT = isLT ? 'AAAA':'';
         //todo media queries must also match \wte? at beginning
-
 
         let upper: string | null = null,
             lower: string | null = null;
@@ -85,6 +81,7 @@ export class Breakpoints {
         } else {
 
             let actualBreakpoints: RegExpExecArray | null = this.regexps.actualBreakpoints.exec(keyToParse);
+
             if (actualBreakpoints!) {
                 if (isBetween) {
                     lower = actualBreakpoints[1];
@@ -100,23 +97,21 @@ export class Breakpoints {
         }
 
 
-        if(this.options.useMQL4RangeContext){
-            if(lower && upper){
-                mediaQuery['_mql4rc'] = `${lower} < width < ${upper}`;
+        if (this.options.useMQL4RangeContext) {
+            if (lower && upper) {
+                mediaQuery[':mql4rc'] = `${lower} < width < ${upper}`;
+            } else if (lower) {
+                mediaQuery[':mql4rc'] = `width >${compareEquality ? '=' : ''} ${lower}`;
+            } else if (upper) {
+                mediaQuery[':mql4rc'] = `width <${compareEquality ? '=' : ''} ${upper}`;
             }
-            else if(lower){
-                mediaQuery['_mql4rc'] = `width >${compareEquality?'=':''} ${lower}`;
-            }
-            else if(upper){
-                mediaQuery['_mql4rc'] = `width <${compareEquality?'=':''} ${upper}`;
-            }
-        }else{
+        } else {
 
             if (lower) {
                 let value = parseFloat(lower),
-                    unit = lower.replace(String(value),'');
+                    unit = lower.replace(String(value), '');
 
-                if(compareEquality){
+                if (compareEquality) {
                     value -= this.options.classicMinMaxSubtract;
                 }
 
@@ -124,15 +119,12 @@ export class Breakpoints {
             }
             if (upper) {
                 let value = parseFloat(upper),
-                    unit = upper.replace(String(value),'');
+                    unit = upper.replace(String(value), '');
 
-                if(!compareEquality){
+                if (!compareEquality) {
                     value -= this.options.classicMinMaxSubtract;
                 }
 
-                console.log({
-                    keyToParse, value, unit
-                })
                 mediaQuery['max-width'] = value + unit;
             }
         }
@@ -160,7 +152,7 @@ export class Breakpoints {
                 emitDebugMessage(`JSON given "${breakpointDefinition}"`, 'error')
                 this.breakpoints = [['undefined', '0px']];
             }
-            if(!(this.breakpoints instanceof Array)){
+            if (!(this.breakpoints instanceof Array)) {
                 emitDebugMessage('JSON parse of given breakpoints did not yield expected array in format [["key", "value"], ...]');
                 this.breakpoints = [['undefined', '0px']];
             }
@@ -176,19 +168,17 @@ export class Breakpoints {
         let keysOnlyString = keys.join('|'),
             keysAndValuesString = keysOnlyString + '|\\d+\\w{2,3}';
 
-        //todo enable newer syntax with lt,lte,gt,gte(,eq)
         this.regexps = {
-            test: new RegExp(`^((lte?|gte?|eq)\-?)?(${keysAndValuesString})(\-(to|up|down)\-?)?(${keysAndValuesString})?$`),
+            test: new RegExp(`^([lg]te?-?)?(${keysAndValuesString})(-(to|up|down)-?)?(${keysAndValuesString})?$`),
             isOnly: new RegExp(`^(${keysOnlyString})$`),
-            isGT: new RegExp(`^(${keysAndValuesString})\-up$`),
-            isLT: new RegExp(`^(lte?\-(${keysAndValuesString}))|((${keysAndValuesString})\-down)$`),
+            isGT: new RegExp(`^(gte?-(${keysAndValuesString}))|((${keysAndValuesString})\-up)$`),
+            isLT: new RegExp(`^(lte?-(${keysAndValuesString}))|((${keysAndValuesString})\-down)$`),
             isBetween: new RegExp(`^(${keysAndValuesString})-to-(${keysAndValuesString})$`),
-            actualBreakpoints: new RegExp('^(?:(\\d+\\w{2,3})-to-(\\d+\\w{2,3})|(\\d+\\w{2,3})(?:\-\\w{2,4})?)$'),
-            usesOnlyBreakpointKeys: new RegExp(`^(${keysOnlyString})(?:\-(?:to|up|down)\-?)?(${keysOnlyString})?$`),
+            actualBreakpoints: new RegExp('^(?:(\\d+\\w{2,3})-to-(\\d+\\w{2,3})|(?:(?:\\wte?-)?(\\d+\\w{2,3}))(?:-\\w{2,4})?)$'),
+            usesOnlyBreakpointKeys: new RegExp(`^(?:[lg]te?-?)?(${keysOnlyString})(?:-(?:to|up|down)-?)?(${keysOnlyString})?$`),
             usesMixedValues: new RegExp(`^(?:(${keysOnlyString})-to-(\\d+\\w{2,3})|(\\d+\\w{2,3})-to-(${keysOnlyString}))$`),
-
-
         };
+
 
         return this.breakpoints;
     }

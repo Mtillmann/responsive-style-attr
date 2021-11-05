@@ -54,8 +54,6 @@
             var isOnly = this.regexps.isOnly.test(keyToParse), isGT = this.regexps.isGT.test(keyToParse), isLT = this.regexps.isLT.test(keyToParse), isBetween = this.regexps.isBetween.test(keyToParse), usesOnlyBreakpointKeys = this.regexps.usesOnlyBreakpointKeys.exec(keyToParse), usesMixedValues = this.regexps.usesMixedValues.exec(keyToParse), compareEquality = /^\wte/.test(keyToParse);
             //todo dont run all regexps at once
             //todo implement run order in options
-            console.log(isLT);
-            mediaQuery.isLT = isLT ? 'AAAA' : '';
             //todo media queries must also match \wte? at beginning
             var upper = null, lower = null;
             if (usesMixedValues) {
@@ -106,13 +104,13 @@
             }
             if (this.options.useMQL4RangeContext) {
                 if (lower && upper) {
-                    mediaQuery['_mql4rc'] = lower + " < width < " + upper;
+                    mediaQuery[':mql4rc'] = lower + " < width < " + upper;
                 }
                 else if (lower) {
-                    mediaQuery['_mql4rc'] = "width >" + (compareEquality ? '=' : '') + " " + lower;
+                    mediaQuery[':mql4rc'] = "width >" + (compareEquality ? '=' : '') + " " + lower;
                 }
                 else if (upper) {
-                    mediaQuery['_mql4rc'] = "width <" + (compareEquality ? '=' : '') + " " + upper;
+                    mediaQuery[':mql4rc'] = "width <" + (compareEquality ? '=' : '') + " " + upper;
                 }
             }
             else {
@@ -128,11 +126,6 @@
                     if (!compareEquality) {
                         value -= this.options.classicMinMaxSubtract;
                     }
-                    console.log({
-                        keyToParse: keyToParse,
-                        value: value,
-                        unit: unit
-                    });
                     mediaQuery['max-width'] = value + unit;
                 }
             }
@@ -168,15 +161,14 @@
                 keys.push(item[0]);
             });
             var keysOnlyString = keys.join('|'), keysAndValuesString = keysOnlyString + '|\\d+\\w{2,3}';
-            //todo enable newer syntax with lt,lte,gt,gte(,eq)
             this.regexps = {
-                test: new RegExp("^((lte?|gte?|eq)-?)?(" + keysAndValuesString + ")(-(to|up|down)-?)?(" + keysAndValuesString + ")?$"),
+                test: new RegExp("^([lg]te?-?)?(" + keysAndValuesString + ")(-(to|up|down)-?)?(" + keysAndValuesString + ")?$"),
                 isOnly: new RegExp("^(" + keysOnlyString + ")$"),
-                isGT: new RegExp("^(" + keysAndValuesString + ")-up$"),
+                isGT: new RegExp("^(gte?-(" + keysAndValuesString + "))|((" + keysAndValuesString + ")-up)$"),
                 isLT: new RegExp("^(lte?-(" + keysAndValuesString + "))|((" + keysAndValuesString + ")-down)$"),
                 isBetween: new RegExp("^(" + keysAndValuesString + ")-to-(" + keysAndValuesString + ")$"),
-                actualBreakpoints: new RegExp('^(?:(\\d+\\w{2,3})-to-(\\d+\\w{2,3})|(\\d+\\w{2,3})(?:\-\\w{2,4})?)$'),
-                usesOnlyBreakpointKeys: new RegExp("^(" + keysOnlyString + ")(?:-(?:to|up|down)-?)?(" + keysOnlyString + ")?$"),
+                actualBreakpoints: new RegExp('^(?:(\\d+\\w{2,3})-to-(\\d+\\w{2,3})|(?:(?:\\wte?-)?(\\d+\\w{2,3}))(?:-\\w{2,4})?)$'),
+                usesOnlyBreakpointKeys: new RegExp("^(?:[lg]te?-?)?(" + keysOnlyString + ")(?:-(?:to|up|down)-?)?(" + keysOnlyString + ")?$"),
                 usesMixedValues: new RegExp("^(?:(" + keysOnlyString + ")-to-(\\d+\\w{2,3})|(\\d+\\w{2,3})-to-(" + keysOnlyString + "))$"),
             };
             return this.breakpoints;
@@ -370,7 +362,8 @@
                         mediaQueryPartsArray.push("(" + k + ")");
                     }
                     else if (v !== false) {
-                        mediaQueryPartsArray.push("(" + k + ": " + v + ")");
+                        var key_1 = k[0] === ':' ? '' : k + ": ";
+                        mediaQueryPartsArray.push("(" + key_1 + v + ")");
                     }
                     //do nothing
                 }

@@ -62,9 +62,11 @@
 
 <h1 data-rsa-selector=".lol" data-rsa-style='{"255px-to-512px" : "font-size: 1.5rem", "500px-up" : "font-size:2rem"}'>I change my font-size according to screen width</h1>
 
-<div data-rsa-style='{"lt-400px" : "border:10px dashed green;"}'></div>
-<div data-rsa-style='{"lte-1680px" : "border:10px dashed blue;"}'><h1>PLEASE KILL ME :D</h1></div>
-<div data-rsa-style='{"gte-400px" : "border:10px dashed green;"}'>FOR FUCKS SAKE</div>
+<div data-rsa-style='{"lt-2400px" : "border:10px dashed green;"}'>a</div>
+<div data-rsa-style='{"lte-1680px" : "border:10px dashed blue;"}'><h1>b</h1></div>
+<div data-rsa-style='{"gte-400px" : "border:10px dashed green;"}'>c</div>
+<div data-rsa-style='{"gt-md" : "border:10px dashed green;"}'>d</div>
+<div data-rsa-style='{"lt-xxl" : "border:10px dotted pink;"}'>e</div>
 <script src="js/rsa.dev.umd.js"></script>
 
 <script>
@@ -101,6 +103,15 @@
                     mediaQuery.media = 'only noop'
                 }
             }
+        });
+
+        document.body.insertAdjacentHTML('beforeend',`
+            <div data-rsa-key="mql4" data-rsa-style='{"gt-255px":"background:beige;"}'>mql4 test</div>
+        `);
+
+        new RespStyleAttr.Css({
+            useMQL4RangeContext : true,
+            breakpointKey: 'mql4'
         });
 
     })

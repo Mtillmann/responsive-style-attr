@@ -223,7 +223,8 @@ export class Css {
                 if (v === true) {
                     mediaQueryPartsArray.push(`(${k})`);
                 } else if (v !== false) {
-                    mediaQueryPartsArray.push(`(${k}: ${v})`);
+                    let key = k[0] === ':' ? '' : `${k}: `;
+                    mediaQueryPartsArray.push(`(${key}${v})`);
                 }
                 //do nothing
             }
