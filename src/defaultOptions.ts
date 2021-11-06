@@ -10,5 +10,6 @@ export var defaultOptions: any = {
     ignoreDOM: false,
     alwaysPrependMediatype: true,
     minMaxSubtract : 0.02,
-    useMQL4RangeContext : false
+    useMQL4RangeContext : false,
+    removeDataAttribute : false
 }

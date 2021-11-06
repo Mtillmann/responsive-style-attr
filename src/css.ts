@@ -4,23 +4,6 @@ import {defaultOptions} from "./defaultOptions";
 
 export var instances: any = {};
 
-/**
- * great cyrb53 hash from https://stackoverflow.com/a/52171480
- * @param str
- * @param seed
- */
-const cyrb53 = (str: string, seed = 0) => {
-    let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
-    for (let i = 0, ch; i < str.length; i++) {
-        ch = str.charCodeAt(i);
-        h1 = Math.imul(h1 ^ ch, 2654435761);
-        h2 = Math.imul(h2 ^ ch, 1597334677);
-    }
-    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
-    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
-    return 4294967296 * (2097151 & h2) + (h1 >>> 0);
-};
-
 export class Css {
     breakpoints!: Breakpoints;
     mediaQueries: any = {};
@@ -28,10 +11,9 @@ export class Css {
     regexps: any = {};
     hashSeed: number = 0;
     options: any = {};
-    localDefaultOptions: any = {};
 
     constructor(options: any = {}) {
-        this.options = Object.assign({}, defaultOptions, this.localDefaultOptions, options);
+        this.options = Object.assign({}, defaultOptions, options);
 
         //todo use spread syntax
         let instanceKey = `${this.options.breakpointKey}_${this.options.breakpointSelector}`;
@@ -106,7 +88,7 @@ export class Css {
             let mediaQuery = this.keyToMediaQuery(key);
             if (mediaQuery) {
                 let style = this.reOrderStyles(parsed[key]),
-                    hash = cyrb53(`${mediaQuery}:${style}`, this.hashSeed),
+                    hash = this.hash(`${mediaQuery}:${style}`, this.hashSeed),
                     selector = this.options.selectorTemplate(hash);
 
                 info.push({
@@ -157,17 +139,9 @@ export class Css {
                 }
                 target.appendChild(el);
                 return el;
-            })(), content = [];
+            })();
 
-        for (const mediaQuery in this.styles) {
-            content.push(`${mediaQuery}{`);
-            for (const selector in this.styles[mediaQuery]) {
-                content.push(`\t${selector}{ ${this.styles[mediaQuery][selector]} }`);
-            }
-            content.push('}');
-        }
-
-        node.innerHTML = content.join("\n")
+        node.innerHTML = this.getCss();
     };
 
     reOrderStyles(styleString: string): string {
@@ -207,7 +181,7 @@ export class Css {
                 } else if (this.breakpoints.test(fragment)) {
                     this.breakpoints.processKey(mediaQueryParts, fragment);
                 } else if (fragment[0] === '(') {
-                    mediaQueryParts[':' + fragment] = fragment.slice(1,-1);
+                    mediaQueryParts[':' + fragment] = fragment.slice(1, -1);
 
                 } else {
                     //attempt to check if feature exists and run feature
@@ -241,4 +215,35 @@ export class Css {
         return this.mediaQueries[key];
 
     };
+
+    /**
+     * great cyrb53 hash from https://stackoverflow.com/a/52171480
+     * @param str
+     * @param seed
+     */
+    hash(str: string, seed = 0) {
+        let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+        for (let i = 0, ch; i < str.length; i++) {
+            ch = str.charCodeAt(i);
+            h1 = Math.imul(h1 ^ ch, 2654435761);
+            h2 = Math.imul(h2 ^ ch, 1597334677);
+        }
+        h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+        h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+        return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+
+    };
+
+    getCss(): String {
+        let content = [];
+        for (const mediaQuery in this.styles) {
+            content.push(`${mediaQuery}{`);
+            for (const selector in this.styles[mediaQuery]) {
+                content.push(`\t${selector}{ ${this.styles[mediaQuery][selector]} }`);
+            }
+            content.push('}');
+        }
+
+        return content.join("\n");
+    }
 }

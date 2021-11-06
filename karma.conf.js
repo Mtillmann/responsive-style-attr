@@ -15,8 +15,8 @@ module.exports = function (config) {
 
         // list of files / patterns to load in the browser
         files: [
-            'test/rsa.dev.umd.js',
-            'test/*.spec.js',
+            'tests/rsa.dev.umd.js',
+            'tests/*.spec.js',
         ],
         client: {
             clearContext: false,
@@ -32,7 +32,7 @@ module.exports = function (config) {
         // preprocess matching files before serving them to the browser
         // available preprocessors: https://www.npmjs.com/search?q=keywords:karma-preprocessor
         preprocessors: {
-            'test/rsa.dev.umd.js': ['coverage']
+            'tests/rsa.dev.umd.js': ['coverage']
         },
 
 

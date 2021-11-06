@@ -11,7 +11,7 @@ export default {
     },{
         sourcemap: true,
         name: 'RespStyleAttr',
-        file: 'test/rsa.dev.umd.js',
+        file: 'tests/rsa.dev.umd.js',
         format: 'umd'
     }],
     plugins: [
