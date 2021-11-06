@@ -15,7 +15,6 @@
     "@types/ms": "^0.7.31",
     "bootstrap": "^5.1.1",
     "bulma": "^0.9.3",
-    "esm": "^3.2.25",
     "foundation-sites": "^6.7.3",
     "jasmine-core": "^3.9.0",
     "jest": "^27.3.1",
