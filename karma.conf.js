@@ -15,7 +15,7 @@ module.exports = function (config) {
 
         // list of files / patterns to load in the browser
         files: [
-            'dev/js/rsa.dev.umd.js',
+            'test/rsa.dev.umd.js',
             'test/*.spec.js',
         ],
         client: {
@@ -32,7 +32,7 @@ module.exports = function (config) {
         // preprocess matching files before serving them to the browser
         // available preprocessors: https://www.npmjs.com/search?q=keywords:karma-preprocessor
         preprocessors: {
-            'dev/**/*.js': ['coverage']
+            'test/rsa.dev.umd.js': ['coverage']
         },
 
 
@@ -52,7 +52,7 @@ module.exports = function (config) {
 
         // level of logging
         // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-        logLevel: config.LOG_INFO,
+        logLevel: config.LOG_ERROR,
 
 
         // enable / disable watching file and executing tests whenever any file changes
@@ -70,6 +70,6 @@ module.exports = function (config) {
 
         // Concurrency level
         // how many browser instances should be started simultaneously
-        concurrency: Infinity
+        concurrency: 1
     })
 }

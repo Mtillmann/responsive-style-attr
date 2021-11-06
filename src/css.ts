@@ -28,9 +28,10 @@ export class Css {
     regexps: any = {};
     hashSeed: number = 0;
     options: any = {};
+    localDefaultOptions: any = {};
 
     constructor(options: any = {}) {
-        this.options = Object.assign({}, defaultOptions, options);
+        this.options = Object.assign({}, defaultOptions, this.localDefaultOptions, options);
 
         //todo use spread syntax
         let instanceKey = `${this.options.breakpointKey}_${this.options.breakpointSelector}`;

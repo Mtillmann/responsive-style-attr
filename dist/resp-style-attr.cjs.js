@@ -200,7 +200,8 @@ var Css = /** @class */ (function () {
         this.regexps = {};
         this.hashSeed = 0;
         this.options = {};
-        this.options = Object.assign({}, defaultOptions, options);
+        this.localDefaultOptions = {};
+        this.options = Object.assign({}, defaultOptions, this.localDefaultOptions, options);
         //todo use spread syntax
         var instanceKey = this.options.breakpointKey + "_" + this.options.breakpointSelector;
         if (instanceKey in instances) {

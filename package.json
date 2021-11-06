@@ -10,8 +10,6 @@
     "url": "https://github.com/Mtillmann/responsive-style-attr.git"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^20.0.0",
-    "@rollup/plugin-node-resolve": "^13.0.5",
     "@rollup/plugin-typescript": "^8.2.5",
     "@types/ms": "^0.7.31",
     "bootstrap": "^5.1.1",
@@ -33,8 +31,10 @@
     "typescript": "^4.4.3"
   },
   "scripts": {
+    "merge" : "git checkout dev -- dist src README.md package.json package-lock.json karma.conf.js rollup.config.js tsconfig.json",
     "build": "terser dist/resp-style-attr.umd.js --compress --mangle --output dist/resp-style-attr.umd.min.js",
     "ts:build": "rollup -c",
+    "ts:dev-server": "rollup --config \"rollup.server-dev-config.js\" -w",
     "ts:dev": "rollup --config \"rollup.dev-config.js\" -w",
     "ts:test": "rollup --config \"rollup.dev-config.js\" && karma start",
     "ts:pretest": "npm run ts:build",
