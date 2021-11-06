@@ -234,7 +234,7 @@ export class Css {
 
     };
 
-    getCss(): String {
+    getCss(): string {
         let content = [];
         for (const mediaQuery in this.styles) {
             content.push(`${mediaQuery}{`);

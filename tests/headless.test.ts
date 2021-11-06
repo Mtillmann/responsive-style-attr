@@ -56,7 +56,7 @@ describe('headless usage', function () {
         expect(result.match(/data-rsa-style/)).toBeNull();
     });
 
-    it('yields the same selector for duplicate keys', () => {
+    it('yields the same selector for duplicate keys and values', () => {
         const instance = new Headless({
                 breakpointKey: Math.random()
             }),
@@ -83,14 +83,16 @@ describe('headless usage', function () {
 
     it('generates CSS from matched responsive style attributes', () => {
         const instance = new Headless({
-                breakpointKey: Math.random()
-            }),
-            result = instance.parse(`
-                   <div data-rsa-style='{"lt-400px":"border: 1px solid #000", "gt-400px" : "padding:5px", "portrait" : "margin:20px;"}'></div>
-            `),
-            css = instance.getCss();
+            breakpointKey: Math.random()
+        });
 
-        expect(css.match(/\[data-rsa-\d+\]/g).length).toEqual(3);
+        instance.parse(`
+                   <div data-rsa-style='{"lt-400px":"border: 1px solid #000", "gt-400px" : "padding:5px", "portrait" : "margin:20px;"}'></div>
+            `);
+
+        const css = instance.getCss();
+
+        expect(css.match(/data-rsa-\d+/g).length).toEqual(3);
     });
 
 
@@ -108,7 +110,7 @@ describe('headless usage', function () {
 
         let css = instance.getCss();
 
-        expect(css.match(/\[data-rsa-\d+\]/g).length).toEqual(6);
+        expect(css.match(/data-rsa-\d+/g).length).toEqual(6);
     });
 
     it('handles borked json gracefully', () => {
@@ -133,17 +135,29 @@ describe('headless usage', function () {
             xl = '1200px',
             xxl = '1400px',
             instance = new Headless({
-            breakpointKey: Math.random(),
-            breakpoints: [["xs", xs], ["sm", sm], ["md", md], ["lg", lg], ["xl", xl], ["xxl", xxl]]
-        });
+                breakpointKey: Math.random(),
+                breakpoints: [["xs", xs], ["sm", sm], ["md", md], ["lg", lg], ["xl", xl], ["xxl", xxl]]
+            });
 
         instance.parse(`
                    <div data-rsa-style='{"gt-md" : "margin:20px;"}'></div>
             `);
 
-        let css = instance.getCss();
+        let css:string = instance.getCss();
 
         expect(new RegExp(`min-width: ${md}`).test(css)).toBe(true);
+    });
+
+    it('creates media queries and selectors from string and objects', () => {
+        const instance = new Headless({
+                breakpointKey: Math.random()
+            });
+
+        instance.push({"500px-up" : "color:green", "800px-up" : "color:blue"})
+        instance.push('{"500px-down" : "color:green", "800px-to-1200px" : "color:blue"}')
+
+        expect(instance.getCss().match(/\]\{/g).length).toEqual(4)
+
     });
 
 });

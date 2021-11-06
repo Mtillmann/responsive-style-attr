@@ -415,9 +415,21 @@ var Headless = /** @class */ (function (_super) {
         return _super.call(this, Object.assign({
             ignoreDOM: true,
             selectorTemplate: function (s) { return "[data-rsa-" + s + "]"; },
-            selectorPropertyAttacher: function (node, hash) { return "data-rsa-" + hash + "=\"1\""; }
+            selectorPropertyAttacher: function (node, hash) { return "data-rsa-" + hash; }
         }, options || {})) || this;
     }
+    Headless.prototype.push = function (styleObject) {
+        if (typeof styleObject === 'string') {
+            styleObject = JSON.parse(styleObject);
+        }
+        var attributes = [];
+        for (var key in styleObject) {
+            var mediaQuery = this.keyToMediaQuery(key), style = this.reOrderStyles(styleObject[key]), hash = this.hash(mediaQuery + ":" + style, this.hashSeed), selector = this.options.selectorTemplate(hash), attribute = this.options.selectorPropertyAttacher(null, hash);
+            this.addStyle(mediaQuery, selector, style);
+            attributes.push(attribute);
+        }
+        return attributes;
+    };
     Headless.prototype.parse = function (html, remove) {
         var _this = this;
         if (remove === void 0) { remove = false; }
@@ -433,12 +445,7 @@ var Headless = /** @class */ (function (_super) {
             if (remove || _this.options.removeDataAttribute) {
                 string = '';
             }
-            for (var key in styleObject) {
-                var mediaQuery = _this.keyToMediaQuery(key), style = _this.reOrderStyles(styleObject[key]), hash = _this.hash(mediaQuery + ":" + style, _this.hashSeed), selector = _this.options.selectorTemplate(hash), attribute = _this.options.selectorPropertyAttacher(null, hash);
-                _this.addStyle(mediaQuery, selector, style);
-                string += ' ' + attribute;
-            }
-            return string.trim();
+            return (string + ' ' + _this.push(styleObject).join(' ')).trim();
         });
         return html;
     };
