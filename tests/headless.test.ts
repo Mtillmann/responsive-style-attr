@@ -3,17 +3,17 @@
  * ----@-----jest-environment jsdom
  * //remove dashes
  */
-import {Static} from "../src/static";
+import {Headless} from "../src/headless";
 
 describe('headless usage', function () {
 
     it('initializes utilizing default params', () => {
-        const instance = new Static();
+        const instance = new Headless();
         expect(instance.options.ignoreDOM).toBe(true);
     });
 
     it('parses responsive style from single element fragment', () => {
-        const instance = new Static({
+        const instance = new Headless({
                 breakpointKey: Math.random()
             }),
             result = instance.parse(`<div data-rsa-style='{"lt-400px":"border: 1px solid #000"}'></div>`)
@@ -23,7 +23,7 @@ describe('headless usage', function () {
 
 
     it('parses responsive style from element fragment containing multiple elements', () => {
-        const instance = new Static({
+        const instance = new Headless({
                 breakpointKey: Math.random()
             }),
             result = instance.parse(`
@@ -37,7 +37,7 @@ describe('headless usage', function () {
     });
 
     it('removes the initial style attribute when remove arg is passed', () => {
-        const instance = new Static({
+        const instance = new Headless({
                 breakpointKey: Math.random()
             }),
             result = instance.parse(`<div data-rsa-style='{"lt-400px":"border: 1px solid #000"}'></div>`, true)
@@ -47,7 +47,7 @@ describe('headless usage', function () {
 
 
     it('removes the initial style attribute when removeDataAttribute option is given', () => {
-        const instance = new Static({
+        const instance = new Headless({
                 breakpointKey: Math.random(),
                 removeDataAttribute: true
             }),
@@ -57,7 +57,7 @@ describe('headless usage', function () {
     });
 
     it('yields the same selector for duplicate keys', () => {
-        const instance = new Static({
+        const instance = new Headless({
                 breakpointKey: Math.random()
             }),
             result = instance.parse(`
@@ -71,7 +71,7 @@ describe('headless usage', function () {
 
 
     it('attaches multiple selectors according to keys', () => {
-        const instance = new Static({
+        const instance = new Headless({
                 breakpointKey: Math.random()
             }),
             result = instance.parse(`
@@ -82,7 +82,7 @@ describe('headless usage', function () {
     });
 
     it('generates CSS from matched responsive style attributes', () => {
-        const instance = new Static({
+        const instance = new Headless({
                 breakpointKey: Math.random()
             }),
             result = instance.parse(`
@@ -95,7 +95,7 @@ describe('headless usage', function () {
 
 
     it('allows adding more fragments at a later time and yields CSS for all elements', () => {
-        const instance = new Static({
+        const instance = new Headless({
             breakpointKey: Math.random()
         });
 
@@ -112,7 +112,7 @@ describe('headless usage', function () {
     });
 
     it('handles borked json gracefully', () => {
-        const instance = new Static({
+        const instance = new Headless({
             breakpointKey: Math.random()
         });
 
@@ -132,7 +132,7 @@ describe('headless usage', function () {
             lg = '992px',
             xl = '1200px',
             xxl = '1400px',
-            instance = new Static({
+            instance = new Headless({
             breakpointKey: Math.random(),
             breakpoints: [["xs", xs], ["sm", sm], ["md", md], ["lg", lg], ["xl", xl], ["xxl", xxl]]
         });

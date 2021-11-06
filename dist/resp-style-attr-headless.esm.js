@@ -1,3 +1,34 @@
+/*! *****************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+/* global Reflect, Promise */
+
+var extendStatics = function(d, b) {
+    extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+    return extendStatics(d, b);
+};
+
+function __extends(d, b) {
+    if (typeof b !== "function" && b !== null)
+        throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+    extendStatics(d, b);
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+}
+
 var defaultOptions = {
     debug: false,
     breakpointSelector: 'html',
@@ -377,27 +408,44 @@ var Css = /** @class */ (function () {
     return Css;
 }());
 
-var init = function (options) {
-    if (options === void 0) { options = {}; }
-    var nodes = document.querySelectorAll('[data-rsa-key]:not([data-rsa-is-processed]), [data-rsa-selector]:not([data-rsa-is-processed])'), defaultKeyAndSelector = defaultOptions.breakpointKey + "_" + defaultOptions.breakpointSelector;
-    if (!(defaultKeyAndSelector in instances)) {
-        instances[defaultKeyAndSelector] = new Css(options);
+var Headless = /** @class */ (function (_super) {
+    __extends(Headless, _super);
+    function Headless(options) {
+        if (options === void 0) { options = {}; }
+        return _super.call(this, Object.assign({
+            ignoreDOM: true,
+            selectorTemplate: function (s) { return "[data-rsa-" + s + "]"; },
+            selectorPropertyAttacher: function (node, hash) { return "data-rsa-" + hash + "=\"1\""; }
+        }, options || {})) || this;
     }
-    for (var i = 0; i < nodes.length; i++) {
-        var dataset = nodes[i].dataset, breakpointKey = dataset.rsaKey || defaultOptions.breakpointKey, breakpointSelector = dataset.rsaSelector || defaultOptions.breakpointSelector;
-        if (!instances.hasOwnProperty(breakpointKey + "_" + breakpointSelector)) {
-            new Css({ breakpointSelector: breakpointSelector, breakpointKey: breakpointKey });
-        }
-    }
-}, refresh = function () {
-    for (var key in instances) {
-        instances[key].refresh();
-    }
-}, get = function (key) {
-    if (key) {
-        return instances[key] || null;
-    }
-    return instances;
-};
+    Headless.prototype.parse = function (html, remove) {
+        var _this = this;
+        if (remove === void 0) { remove = false; }
+        html = html.replace(/data-rsa-style='(\{.*\})'/g, function (string, json) {
+            var styleObject = {};
+            try {
+                styleObject = JSON.parse(json);
+            }
+            catch (e) {
+                emitDebugMessage("JSON.parse failed on: \"" + json + "\"");
+                return string;
+            }
+            if (remove || _this.options.removeDataAttribute) {
+                string = '';
+            }
+            for (var key in styleObject) {
+                var mediaQuery = _this.keyToMediaQuery(key), style = _this.reOrderStyles(styleObject[key]), hash = _this.hash(mediaQuery + ":" + style, _this.hashSeed), selector = _this.options.selectorTemplate(hash), attribute = _this.options.selectorPropertyAttacher(null, hash);
+                _this.addStyle(mediaQuery, selector, style);
+                string += ' ' + attribute;
+            }
+            return string.trim();
+        });
+        return html;
+    };
+    Headless.prototype.getStyleSheet = function () {
+        return "<style type=\"text/css\" id=\"rsa-stylesheet-" + this.hashSeed + "\"" + (this.options.scopedStyleNode ? ' scoped' : '') + ">\n" + this.getCss() + "\n</style>\n";
+    };
+    return Headless;
+}(Css));
 
-export { Css, defaultOptions, get, init, refresh };
+export { Headless };

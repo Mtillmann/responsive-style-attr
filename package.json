@@ -34,13 +34,15 @@
     "typescript": "^4.4.3"
   },
   "scripts": {
-    "merge": "git checkout dev -- dist src tests README.md package.json package-lock.json karma.conf.js rollup.config.js tsconfig.json",
-    "build": "terser dist/resp-style-attr.umd.js --compress --mangle --output dist/resp-style-attr.umd.min.js",
+    "merge": "git checkout dev -- dist src tests README.md package.json package-lock.json karma.conf.js rollup.config.js tsconfig.json rollup.dev-config.js rollup.dev-config.js",
+    "build": "npm run ts:build-dev && npm run ts:build && npm run ts:build-headless && npm run js:build-min",
+    "js:build-min": "terser dist/resp-style-attr.umd.js --compress --mangle --output dist/resp-style-attr.umd.min.js",
     "ts:build": "rollup -c",
+    "ts:build-headless": "rollup -c \"rollup.headless-config.js\"",
     "ts:dev": "rollup --config \"rollup.dev-config.js\" -w",
-    "ts:test": "rollup --config \"rollup.dev-config.js\" && karma start",
+    "ts:build-dev": "rollup --config \"rollup.dev-config.js\"",
+    "ts:test": "karma start",
     "ts:jest": "jest headless --watch --maxWorkers=1",
-    "ts:pretest": "npm run ts:build",
     "sass:watch-dev": "node-sass --watch src/scss --output dev/css",
     "sass:dev": "node-sass --recursive --source-comments --source-map true scss --output dev/css"
   },

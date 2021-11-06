@@ -14,7 +14,8 @@ var defaultOptions = {
     ignoreDOM: false,
     alwaysPrependMediatype: true,
     minMaxSubtract: 0.02,
-    useMQL4RangeContext: false
+    useMQL4RangeContext: false,
+    removeDataAttribute: false
 };
 
 function emitDebugMessage(data, type) {
@@ -134,7 +135,7 @@ var Breakpoints = /** @class */ (function () {
         if (this.options.breakpoints) {
             this.breakpoints = this.options.breakpoints;
         }
-        else {
+        else if (typeof window !== 'undefined') {
             computedStyle = getComputedStyle(document.querySelector(this.selector) || document.documentElement);
             breakpointDefinition = computedStyle.getPropertyValue(propertyName);
             if (!breakpointDefinition) {
@@ -175,23 +176,6 @@ var Breakpoints = /** @class */ (function () {
 }());
 
 var instances = {};
-/**
- * great cyrb53 hash from https://stackoverflow.com/a/52171480
- * @param str
- * @param seed
- */
-var cyrb53 = function (str, seed) {
-    if (seed === void 0) { seed = 0; }
-    var h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
-    for (var i = 0, ch = void 0; i < str.length; i++) {
-        ch = str.charCodeAt(i);
-        h1 = Math.imul(h1 ^ ch, 2654435761);
-        h2 = Math.imul(h2 ^ ch, 1597334677);
-    }
-    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
-    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
-    return 4294967296 * (2097151 & h2) + (h1 >>> 0);
-};
 var Css = /** @class */ (function () {
     function Css(options) {
         if (options === void 0) { options = {}; }
@@ -200,8 +184,7 @@ var Css = /** @class */ (function () {
         this.regexps = {};
         this.hashSeed = 0;
         this.options = {};
-        this.localDefaultOptions = {};
-        this.options = Object.assign({}, defaultOptions, this.localDefaultOptions, options);
+        this.options = Object.assign({}, defaultOptions, options);
         //todo use spread syntax
         var instanceKey = this.options.breakpointKey + "_" + this.options.breakpointSelector;
         if (instanceKey in instances) {
@@ -254,7 +237,7 @@ var Css = /** @class */ (function () {
         for (var key in parsed) {
             var mediaQuery = this.keyToMediaQuery(key);
             if (mediaQuery) {
-                var style = this.reOrderStyles(parsed[key]), hash = cyrb53(mediaQuery + ":" + style, this.hashSeed), selector = this.options.selectorTemplate(hash);
+                var style = this.reOrderStyles(parsed[key]), hash = this.hash(mediaQuery + ":" + style, this.hashSeed), selector = this.options.selectorTemplate(hash);
                 info.push({
                     key: key,
                     mediaQuery: mediaQuery,
@@ -300,15 +283,8 @@ var Css = /** @class */ (function () {
             }
             target.appendChild(el);
             return el;
-        })(), content = [];
-        for (var mediaQuery in this.styles) {
-            content.push(mediaQuery + "{");
-            for (var selector in this.styles[mediaQuery]) {
-                content.push("\t" + selector + "{ " + this.styles[mediaQuery][selector] + " }");
-            }
-            content.push('}');
-        }
-        node.innerHTML = content.join("\n");
+        })();
+        node.innerHTML = this.getCss();
     };
     Css.prototype.reOrderStyles = function (styleString) {
         return styleString.split(';')
@@ -373,6 +349,34 @@ var Css = /** @class */ (function () {
         }
         this.mediaQueries[key] = '@media ' + mediaQueries.join(', ');
         return this.mediaQueries[key];
+    };
+    /**
+     * great cyrb53 hash from https://stackoverflow.com/a/52171480
+     * @param str
+     * @param seed
+     */
+    Css.prototype.hash = function (str, seed) {
+        if (seed === void 0) { seed = 0; }
+        var h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+        for (var i = 0, ch = void 0; i < str.length; i++) {
+            ch = str.charCodeAt(i);
+            h1 = Math.imul(h1 ^ ch, 2654435761);
+            h2 = Math.imul(h2 ^ ch, 1597334677);
+        }
+        h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+        h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+        return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+    };
+    Css.prototype.getCss = function () {
+        var content = [];
+        for (var mediaQuery in this.styles) {
+            content.push(mediaQuery + "{");
+            for (var selector in this.styles[mediaQuery]) {
+                content.push("\t" + selector + "{ " + this.styles[mediaQuery][selector] + " }");
+            }
+            content.push('}');
+        }
+        return content.join("\n");
     };
     return Css;
 }());

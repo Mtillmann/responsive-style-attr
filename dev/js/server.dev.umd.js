@@ -433,7 +433,7 @@
         return Static;
     }(Css));
 
-    exports.Static = Static;
+    exports.Headless = Static;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 

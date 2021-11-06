@@ -1,7 +1,7 @@
 import {Css} from "./css";
 import {emitDebugMessage} from "./debugMessage";
 
-class Static extends Css {
+class Headless extends Css {
 
     constructor(options: any = {}) {
 
@@ -16,10 +16,10 @@ class Static extends Css {
 
     parse(html: string, remove: boolean = false) {
         html = html.replace(/data-rsa-style='(\{.*\})'/g, (string, json) => {
-
-            try{
-                const styleObject = JSON.parse(json);
-            }catch(e){
+            let styleObject: any = {};
+            try {
+                styleObject = JSON.parse(json);
+            } catch (e) {
                 emitDebugMessage(`JSON.parse failed on: "${json}"`)
                 return string;
             }
@@ -46,16 +46,15 @@ class Static extends Css {
     }
 
 
-    getStyleSheet(): string{
-
-        return `<style type="text/css" id="rsa-stylesheet-${this.hashSeed}"${this.options.scopedStyleNode?' scoped':''}>
+    getStyleSheet(): string {
+        return `<style type="text/css" id="rsa-stylesheet-${this.hashSeed}"${this.options.scopedStyleNode ? ' scoped' : ''}>
 ${this.getCss()}
 </style>
 `;
 
-}
+    }
 }
 
 export {
-    Static
+    Headless
 }
