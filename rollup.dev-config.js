@@ -8,11 +8,6 @@ export default {
         name: 'RespStyleAttr',
         file: 'dev/js/rsa.dev.umd.js',
         format: 'umd'
-    },{
-        sourcemap: true,
-        name: 'RespStyleAttr',
-        file: 'tests/rsa.dev.umd.js',
-        format: 'umd'
     }],
     plugins: [
         typescript({sourceMap: true}) // so Rollup can convert TypeScript to JavaScript
