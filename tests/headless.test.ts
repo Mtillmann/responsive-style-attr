@@ -26,7 +26,7 @@ describe('headless usage', function () {
         const instance = new Headless({
                 breakpointKey: Math.random()
             }),
-            result = instance.parse(`
+            result:string = instance.parse(`
                    <div data-rsa-style='{"lt-400px":"border: 1px solid #000"}'></div>
                    <div data-rsa-style='{"lt-600px@gt-400px":"border: 1px solid #f00"}'></div>
                    <div data-rsa-style='{"gte-900px":"border: 1px solid #00f"}'></div>

@@ -1,3 +1,11 @@
+/**
+ * @jest-environment jsdom
+ */
+
+import * as RespStyleAttr from "../src/main";
+
+
+
 describe('helpers and such', function () {
 
     it('attaches new instances to the internal instance map', function () {

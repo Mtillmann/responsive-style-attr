@@ -1,13 +1,33 @@
+/**
+ * @jest-environment jsdom
+ */
+
+import * as RespStyleAttr from "../src/main";
+
+
 describe("Extracting styles from nodes", function () {
     const
-        sandbox = document.createElement('div'),
+
         xs = '0',
         sm = '576px',
         md = '768px',
         lg = '992px',
         xl = '1200px',
         xxl = '1400px',
-        breakpoints = [["xs", xs], ["sm", sm], ["md", md], ["lg", lg], ["xl", xl], ["xxl", xxl]],
+        breakpoints = [["xs", xs], ["sm", sm], ["md", md], ["lg", lg], ["xl", xl], ["xxl", xxl]];
+
+    document.body.insertAdjacentHTML('beforeend', `
+        <div id="sandbox">
+        <div id="first" data-rsa-style='{"lg-up@portrait" : "border:1px solid red", "sm-to-lg" : "border:1px solid blue"}'>test</div>
+        <div id="second" data-rsa-style='{"lg-up@portrait" : "border:1px solid red", "sm-to-lg" : "border:1px solid blue"}'>test</div>
+        <div id="third" data-rsa-style='{"lg-up@portrait" : "border:1px solid red", "md-up" : "border:1px solid blue; color: transparent"}'>test</div>
+        <div id="fourth" data-rsa-style='{"lg-up@portrait" : "border:1px solid red", "md-up" : "color: transparent ; border:1px solid blue"}'>test</div>    
+        <div id="fifth" data-rsa-style='{"lg-up@landscape" : "border:1px solid red", "md-up" : "color: transparent ; border:1px solid blue"}'>test</div>    
+        </div>
+    `);
+
+    const sandbox = document.body.querySelector('#sandbox'),
+        elements = sandbox.querySelectorAll('div'),
         css = new RespStyleAttr.Css({
             breakpointKey: 'testing_node_handling',
             breakpoints,
@@ -15,15 +35,6 @@ describe("Extracting styles from nodes", function () {
             attachStyleNodeTo: sandbox
         });
 
-    sandbox.innerHTML = `
-        <div id="first" data-rsa-style='{"lg-up@portrait" : "border:1px solid red", "sm-to-lg" : "border:1px solid blue"}'>test</div>
-        <div id="second" data-rsa-style='{"lg-up@portrait" : "border:1px solid red", "sm-to-lg" : "border:1px solid blue"}'>test</div>
-        <div id="third" data-rsa-style='{"lg-up@portrait" : "border:1px solid red", "md-up" : "border:1px solid blue; color: transparent"}'>test</div>
-        <div id="fourth" data-rsa-style='{"lg-up@portrait" : "border:1px solid red", "md-up" : "color: transparent ; border:1px solid blue"}'>test</div>    
-        <div id="fifth" data-rsa-style='{"lg-up@landscape" : "border:1px solid red", "md-up" : "color: transparent ; border:1px solid blue"}'>test</div>    
-    `;
-
-    const elements = sandbox.querySelectorAll('div');
 
     it('yields same hash for multiple add of same element', function () {
 

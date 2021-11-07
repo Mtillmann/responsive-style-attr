@@ -14,7 +14,7 @@ class Headless extends Css {
 
 
 
-    parse(html: string, remove: boolean = false) {
+    parse(html: string, remove: boolean = false):string {
         html = html.replace(/data-rsa-style='(\{.*\})'/g, (string, json) => {
             let styleObject: any = {};
             try {

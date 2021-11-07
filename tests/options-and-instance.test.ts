@@ -1,6 +1,11 @@
+/**
+ * @jest-environment jsdom
+ */
+
+import * as RespStyleAttr from "../src/main";
+
 describe('Tests Css Constructor options and methods', function () {
     const
-        sandbox = document.createElement('div'),
         xs = '0',
         sm = '576px',
         md = '768px',
@@ -9,13 +14,15 @@ describe('Tests Css Constructor options and methods', function () {
         xxl = '1400px',
         breakpoints = [["xs", xs], ["sm", sm], ["md", md], ["lg", lg], ["xl", xl], ["xxl", xxl]];
 
-    sandbox.innerHTML = `
+    document.body.insertAdjacentHTML('beforeend', `
+        <div id="sandbox">
         <section></section>
-        <div id="first" data-rsa-style='{"lg-up@portrait" : "border:1px solid red", "sm-to-lg" : "border:1px solid blue"}'>test</div>
-        <div id="second" data-rsa-style='{"lg-up@portrait" : "border:1px solid red", "md-up" : "border:1px solid blue; color: transparent"}'>test</div>
-        <div id="third" data-rsa-style='{"lg-up@portrait" : "border:1px solid red", "md-up" : "color: transparent ; border:1px solid blue"}'>test</div>    
-        <div id="fourth" data-rsa-style='{"lg-up@landscape" : "border:1px solid red", "md-up" : "color: transparent ; border:1px solid blue"}'>test</div>    
-    `;
+            <div id="first" data-rsa-style='{"lg-up@portrait" : "border:1px solid red", "sm-to-lg" : "border:1px solid blue"}'>test</div>
+            <div id="second" data-rsa-style='{"lg-up@portrait" : "border:1px solid red", "md-up" : "border:1px solid blue; color: transparent"}'>test</div>
+            <div id="third" data-rsa-style='{"lg-up@portrait" : "border:1px solid red", "md-up" : "color: transparent ; border:1px solid blue"}'>test</div>    
+            <div id="fourth" data-rsa-style='{"lg-up@landscape" : "border:1px solid red", "md-up" : "color: transparent ; border:1px solid blue"}'>test</div>    
+        </div>
+    `);
 
     document.head.insertAdjacentHTML('beforeend', `
             <style type="text/css">
@@ -25,7 +32,8 @@ describe('Tests Css Constructor options and methods', function () {
             </style>
         `);
 
-    const elements = sandbox.querySelectorAll('div');
+    const sandbox = document.body.querySelector('#sandbox'),
+        elements = sandbox.querySelectorAll('div');
 
     it('appends the style element to given selector string', function () {
         const styledump = document.createElement('div');
@@ -171,7 +179,7 @@ describe('Tests Css Constructor options and methods', function () {
         expect(css).toBe(secondCss);
     });
 
-    it('picks up new nodes from dom upon refresh', function(){
+    it('picks up new nodes from dom upon refresh', function () {
         const css = new RespStyleAttr.Css();
         document.body.insertAdjacentHTML('beforeend', `
            <div id="refresh1" data-rsa-style='{"lg-up@portrait" : "border:1px solid red", "sm-to-lg" : "border:1px solid blue"}'></div>
@@ -182,14 +190,14 @@ describe('Tests Css Constructor options and methods', function () {
         return expect(element.matches('[data-rsa-is-processed]')).toBe(true);
     });
 
-    it('does not pick up nodes from dom that have been processed', function(){
+    it('does not pick up nodes from dom that have been processed', function () {
         const css = new RespStyleAttr.Css(),
             nodes = css.refresh();
 
         return expect(nodes.length).toBe(0);
     });
 
-    it('picks up new nodes from dom upon refresh for non default options', function(){
+    it('picks up new nodes from dom upon refresh for non default options', function () {
         document.body.insertAdjacentHTML('beforeend', `
             <style type="text/css">
                 html {
@@ -211,7 +219,7 @@ describe('Tests Css Constructor options and methods', function () {
         return expect(nodes.length).toBe(1);
     });
 
-    it('ignores already processed nodes for non default options', function(){
+    it('ignores already processed nodes for non default options', function () {
         const css = new RespStyleAttr.Css({
             breakpointKey: 'non-default'
         });
@@ -224,7 +232,7 @@ describe('Tests Css Constructor options and methods', function () {
 
     it('creates mql4 query features', function () {
         const css = new RespStyleAttr.Css({
-            breakpointKey : 'mql4-test',
+            breakpointKey: 'mql4-test',
             ignoreDOM: true,
             useMQL4RangeContext: true
         });
@@ -233,7 +241,7 @@ describe('Tests Css Constructor options and methods', function () {
 
     it('applies subtraction', function () {
         const css = new RespStyleAttr.Css({
-            breakpointKey : 'subtract-test',
+            breakpointKey: 'subtract-test',
             ignoreDOM: true,
             minMaxSubtract: 5
         });
@@ -243,9 +251,9 @@ describe('Tests Css Constructor options and methods', function () {
 
     it('doesn\'t apply media when not set', function () {
         const css = new RespStyleAttr.Css({
-            breakpointKey : 'no-default-media-test',
+            breakpointKey: 'no-default-media-test',
             ignoreDOM: true,
-            alwaysPrependMediatype : false
+            alwaysPrependMediatype: false
         });
         expect(css.keyToMediaQuery('500px')).toBe('@media (min-width: 500px)');
     });

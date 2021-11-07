@@ -1,3 +1,10 @@
+/**
+ * @jest-environment jsdom
+ */
+
+import * as RespStyleAttr from "../src/main";
+
+
 describe("Style Property reordering", function () {
     const xs = '0',
         sm = '576px',

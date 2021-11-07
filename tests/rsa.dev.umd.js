@@ -190,7 +190,7 @@
             //todo use spread syntax
             var instanceKey = this.options.breakpointKey + "_" + this.options.breakpointSelector;
             if (instanceKey in instances) {
-                console.error("instance " + instanceKey + " already exists, using existing instance and calling refresh()...");
+                emitDebugMessage("instance " + instanceKey + " already exists, using existing instance and calling refresh()...");
                 if (!this.options.ignoreDOM) {
                     instances[instanceKey].refresh();
                 }
