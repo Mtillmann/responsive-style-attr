@@ -34,8 +34,7 @@
     "ts:build-headless": "rollup -c \"rollup.headless-config.js\"",
     "ts:dev": "rollup --config \"rollup.dev-config.js\" -w",
     "ts:build-dev": "rollup --config \"rollup.dev-config.js\"",
-    "ts:test": "karma start",
-    "ts:jest": "jest headless --watch --maxWorkers=1",
+    "jest": "jest --watch --maxWorkers=1",
     "sass:watch-dev": "node-sass --watch src/scss --output dev/css",
     "sass:dev": "node-sass --recursive --source-comments --source-map true scss --output dev/css"
   },
