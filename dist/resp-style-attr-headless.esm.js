@@ -244,7 +244,8 @@ var Css = /** @class */ (function () {
         return nodes;
     };
     Css.prototype.add = function (node) {
-        var input = node.dataset.rsaStyle || '', parsed = {}, info = [];
+        var _this = this;
+        var input = node.dataset.rsaStyle || '', parsed = {};
         node.dataset.rsaIsProcessed = 'true';
         //todo remove class "rsa-uninitialized" from element, whether it
         //has the class or not ***AFTER*** the styles have been deployed
@@ -261,26 +262,8 @@ var Css = /** @class */ (function () {
             emitDebugMessage("JSON.parse failed on: \"" + input + "\"");
             return false;
         }
-        for (var key in parsed) {
-            var mediaQuery = this.keyToMediaQuery(key);
-            if (mediaQuery) {
-                var style = this.reOrderStyles(parsed[key]), hash = this.hash(mediaQuery + ":" + style, this.hashSeed), selector = this.options.selectorTemplate(hash);
-                info.push({
-                    key: key,
-                    mediaQuery: mediaQuery,
-                    originalStyle: parsed[key],
-                    style: style,
-                    hash: hash,
-                    selector: selector
-                });
-                this.addStyle(mediaQuery, selector, style);
-                this.options.selectorPropertyAttacher(node, hash);
-            }
-            else {
-                emitDebugMessage("unrecognized mediaquery key \"" + key + "\"", 'warn');
-            }
-        }
-        return info;
+        this.push(parsed).forEach(function (hash) { return _this.options.selectorPropertyAttacher(node, hash); });
+        return node;
     };
     Css.prototype.addStyle = function (mediaQuery, selector, styles) {
         if (!(mediaQuery in this.styles)) {
@@ -405,6 +388,18 @@ var Css = /** @class */ (function () {
         }
         return content.join("\n");
     };
+    Css.prototype.push = function (styleObject) {
+        if (typeof styleObject === 'string') {
+            styleObject = JSON.parse(styleObject);
+        }
+        var hashes = [];
+        for (var key in styleObject) {
+            var mediaQuery = this.keyToMediaQuery(key), style = this.reOrderStyles(styleObject[key]), hash = this.hash(mediaQuery + ":" + style, this.hashSeed), selector = this.options.selectorTemplate(hash);
+            this.addStyle(mediaQuery, selector, style);
+            hashes.push(hash);
+        }
+        return hashes;
+    };
     return Css;
 }());
 
@@ -415,21 +410,9 @@ var Headless = /** @class */ (function (_super) {
         return _super.call(this, Object.assign({
             ignoreDOM: true,
             selectorTemplate: function (s) { return "[data-rsa-" + s + "]"; },
-            selectorPropertyAttacher: function (node, hash) { return "data-rsa-" + hash; }
+            selectorPropertyAttacher: function (hash) { return "data-rsa-" + hash; }
         }, options || {})) || this;
     }
-    Headless.prototype.push = function (styleObject) {
-        if (typeof styleObject === 'string') {
-            styleObject = JSON.parse(styleObject);
-        }
-        var attributes = [];
-        for (var key in styleObject) {
-            var mediaQuery = this.keyToMediaQuery(key), style = this.reOrderStyles(styleObject[key]), hash = this.hash(mediaQuery + ":" + style, this.hashSeed), selector = this.options.selectorTemplate(hash), attribute = this.options.selectorPropertyAttacher(null, hash);
-            this.addStyle(mediaQuery, selector, style);
-            attributes.push(attribute);
-        }
-        return attributes;
-    };
     Headless.prototype.parse = function (html, remove) {
         var _this = this;
         if (remove === void 0) { remove = false; }
@@ -445,7 +428,8 @@ var Headless = /** @class */ (function (_super) {
             if (remove || _this.options.removeDataAttribute) {
                 string = '';
             }
-            return (string + ' ' + _this.push(styleObject).join(' ')).trim();
+            var attributes = _this.push(styleObject).map(function (hash) { return _this.options.selectorPropertyAttacher(hash); });
+            return (string + ' ' + attributes.join(' ')).trim();
         });
         return html;
     };

@@ -8,30 +8,11 @@ class Headless extends Css {
         super(Object.assign({
             ignoreDOM: true,
             selectorTemplate: (s: any): string => `[data-rsa-${s}]`,
-            selectorPropertyAttacher: (node: null, hash: string) => `data-rsa-${hash}`
+            selectorPropertyAttacher: (hash: string) => `data-rsa-${hash}`
         }, options || {}));
     };
 
-    push(styleObject: any): string[] {
-        if (typeof styleObject === 'string') {
-            styleObject = JSON.parse(styleObject);
-        }
 
-        let attributes:string[] = [];
-
-        for (const key in styleObject) {
-            const mediaQuery = this.keyToMediaQuery(key),
-                style = this.reOrderStyles(styleObject[key]),
-                hash = this.hash(`${mediaQuery}:${style}`, this.hashSeed),
-                selector = this.options.selectorTemplate(hash),
-                attribute = this.options.selectorPropertyAttacher(null, hash);
-
-            this.addStyle(mediaQuery, selector, style);
-            attributes.push(attribute);
-        }
-
-        return attributes;
-    };
 
     parse(html: string, remove: boolean = false) {
         html = html.replace(/data-rsa-style='(\{.*\})'/g, (string, json) => {
@@ -47,7 +28,9 @@ class Headless extends Css {
                 string = '';
             }
 
-            return (string + ' ' + this.push(styleObject).join(' ')).trim();
+            let attributes = this.push(styleObject).map(hash => this.options.selectorPropertyAttacher(hash));
+
+            return (string + ' ' + attributes.join(' ')).trim();
         });
 
         return html;

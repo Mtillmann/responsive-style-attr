@@ -58,7 +58,7 @@ export class Css {
         return nodes;
     }
 
-    add(node: HTMLElement): object[] | boolean {
+    add(node: HTMLElement): HTMLElement | boolean {
         let input: string = node.dataset.rsaStyle || '',
             parsed: any = {},
             info: object[] = [];
@@ -83,30 +83,9 @@ export class Css {
             return false;
         }
 
+        this.push(parsed).forEach(hash => this.options.selectorPropertyAttacher(node, hash));
 
-        for (let key in parsed) {
-            let mediaQuery = this.keyToMediaQuery(key);
-            if (mediaQuery) {
-                let style = this.reOrderStyles(parsed[key]),
-                    hash = this.hash(`${mediaQuery}:${style}`, this.hashSeed),
-                    selector = this.options.selectorTemplate(hash);
-
-                info.push({
-                    key,
-                    mediaQuery,
-                    originalStyle: parsed[key],
-                    style,
-                    hash,
-                    selector
-                });
-
-                this.addStyle(mediaQuery, selector, style);
-                this.options.selectorPropertyAttacher(node, hash);
-            } else {
-                emitDebugMessage(`unrecognized mediaquery key "${key}"`, 'warn');
-            }
-        }
-        return info;
+        return node;
     };
 
     addStyle(mediaQuery: string, selector: string, styles: string): boolean {
@@ -245,5 +224,24 @@ export class Css {
         }
 
         return content.join("\n");
+    };
+
+    push(styleObject: any): number[] {
+        if (typeof styleObject === 'string') {
+            styleObject = JSON.parse(styleObject);
+        }
+
+        let hashes:number[] = [];
+
+        for (const key in styleObject) {
+            const mediaQuery = this.keyToMediaQuery(key),
+                style = this.reOrderStyles(styleObject[key]),
+                hash = this.hash(`${mediaQuery}:${style}`, this.hashSeed),
+                selector = this.options.selectorTemplate(hash);
+            this.addStyle(mediaQuery, selector, style);
+            hashes.push(hash);
+        }
+
+        return hashes;
     }
 }

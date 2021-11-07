@@ -213,7 +213,8 @@ var Css = /** @class */ (function () {
         return nodes;
     };
     Css.prototype.add = function (node) {
-        var input = node.dataset.rsaStyle || '', parsed = {}, info = [];
+        var _this = this;
+        var input = node.dataset.rsaStyle || '', parsed = {};
         node.dataset.rsaIsProcessed = 'true';
         //todo remove class "rsa-uninitialized" from element, whether it
         //has the class or not ***AFTER*** the styles have been deployed
@@ -230,26 +231,8 @@ var Css = /** @class */ (function () {
             emitDebugMessage("JSON.parse failed on: \"" + input + "\"");
             return false;
         }
-        for (var key in parsed) {
-            var mediaQuery = this.keyToMediaQuery(key);
-            if (mediaQuery) {
-                var style = this.reOrderStyles(parsed[key]), hash = this.hash(mediaQuery + ":" + style, this.hashSeed), selector = this.options.selectorTemplate(hash);
-                info.push({
-                    key: key,
-                    mediaQuery: mediaQuery,
-                    originalStyle: parsed[key],
-                    style: style,
-                    hash: hash,
-                    selector: selector
-                });
-                this.addStyle(mediaQuery, selector, style);
-                this.options.selectorPropertyAttacher(node, hash);
-            }
-            else {
-                emitDebugMessage("unrecognized mediaquery key \"" + key + "\"", 'warn');
-            }
-        }
-        return info;
+        this.push(parsed).forEach(function (hash) { return _this.options.selectorPropertyAttacher(node, hash); });
+        return node;
     };
     Css.prototype.addStyle = function (mediaQuery, selector, styles) {
         if (!(mediaQuery in this.styles)) {
@@ -373,6 +356,18 @@ var Css = /** @class */ (function () {
             content.push('}');
         }
         return content.join("\n");
+    };
+    Css.prototype.push = function (styleObject) {
+        if (typeof styleObject === 'string') {
+            styleObject = JSON.parse(styleObject);
+        }
+        var hashes = [];
+        for (var key in styleObject) {
+            var mediaQuery = this.keyToMediaQuery(key), style = this.reOrderStyles(styleObject[key]), hash = this.hash(mediaQuery + ":" + style, this.hashSeed), selector = this.options.selectorTemplate(hash);
+            this.addStyle(mediaQuery, selector, style);
+            hashes.push(hash);
+        }
+        return hashes;
     };
     return Css;
 }());

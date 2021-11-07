@@ -130,14 +130,15 @@ describe('Tests Css Constructor options and methods', function () {
             breakpoints,
             scopedStyleNode: false,
             ignoreDOM: true,
-            selectorTemplate: s => `[data-my-custom-selector${s}="true"]`,
+            selectorTemplate: s => `[data-my-custom-selector${s}]`,
             selectorPropertyAttacher: (node, hash) => {
                 node.dataset[`myCustomSelector${hash}`] = "true";
             }
-        }), firstInfo = css.add(elements[0]);
+        });
+        css.add(elements[0]);
         css.deployStyleSheet();
 
-        expect(elements[0].matches( firstInfo[0].selector )).toBe(true);
+        expect(Object.keys(elements[0].dataset).filter(k => /mycu/i.test(k)).length).toBe(2);
     });
 
 

@@ -156,7 +156,7 @@ describe('headless usage', function () {
         instance.push({"500px-up" : "color:green", "800px-up" : "color:blue"})
         instance.push('{"500px-down" : "color:green", "800px-to-1200px" : "color:blue"}')
 
-        expect(instance.getCss().match(/\]\{/g).length).toEqual(4)
+        expect(instance.getCss().match(/]{/g).length).toEqual(4)
 
     });
 
