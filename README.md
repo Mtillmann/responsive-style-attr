@@ -155,14 +155,14 @@ let options = {
     features: {
         androidOnly: function (mediaQuery) {
             // this will set the media type to "none" on devices that are not android
-            if (!/android/i.test(userAgent)) {
+            if (!/android/i.test(navigator.userAgent)) {
                 mediaQuery.media = 'none'
             }
         },
         uaMustMatch: function (mediaQuery, input) {
             //this will disable the the mediaquery if the useragent does not match input ...
             const re = new RegExp(input, 'i');
-            if (!re.test(userAgent)) {
+            if (!re.test(navigator.userAgent)) {
                 mediaQuery.media = 'none';
             }
         }
