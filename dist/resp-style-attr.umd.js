@@ -16,7 +16,8 @@
         ignoreDOM: false,
         alwaysPrependMediatype: true,
         minMaxSubtract: 0.02,
-        useMQL4RangeContext: false
+        useMQL4RangeContext: false,
+        removeDataAttribute: false
     };
 
     function emitDebugMessage(data, type) {
@@ -54,7 +55,6 @@
             var isOnly = this.regexps.isOnly.test(keyToParse), isGT = this.regexps.isGT.test(keyToParse), isLT = this.regexps.isLT.test(keyToParse), isBetween = this.regexps.isBetween.test(keyToParse), usesOnlyBreakpointKeys = this.regexps.usesOnlyBreakpointKeys.exec(keyToParse), usesMixedValues = this.regexps.usesMixedValues.exec(keyToParse), compareEquality = /^\wte/.test(keyToParse);
             //todo dont run all regexps at once
             //todo implement run order in options
-            //todo media queries must also match \wte? at beginning
             var upper = null, lower = null;
             if (usesMixedValues) {
                 if (usesMixedValues[1] && usesMixedValues[2]) {
@@ -136,7 +136,7 @@
             if (this.options.breakpoints) {
                 this.breakpoints = this.options.breakpoints;
             }
-            else {
+            else if (typeof window !== 'undefined') {
                 computedStyle = getComputedStyle(document.querySelector(this.selector) || document.documentElement);
                 breakpointDefinition = computedStyle.getPropertyValue(propertyName);
                 if (!breakpointDefinition) {
@@ -177,23 +177,6 @@
     }());
 
     var instances = {};
-    /**
-     * great cyrb53 hash from https://stackoverflow.com/a/52171480
-     * @param str
-     * @param seed
-     */
-    var cyrb53 = function (str, seed) {
-        if (seed === void 0) { seed = 0; }
-        var h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
-        for (var i = 0, ch = void 0; i < str.length; i++) {
-            ch = str.charCodeAt(i);
-            h1 = Math.imul(h1 ^ ch, 2654435761);
-            h2 = Math.imul(h2 ^ ch, 1597334677);
-        }
-        h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
-        h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
-        return 4294967296 * (2097151 & h2) + (h1 >>> 0);
-    };
     var Css = /** @class */ (function () {
         function Css(options) {
             if (options === void 0) { options = {}; }
@@ -202,11 +185,12 @@
             this.regexps = {};
             this.hashSeed = 0;
             this.options = {};
+            this.nodes = [];
             this.options = Object.assign({}, defaultOptions, options);
             //todo use spread syntax
             var instanceKey = this.options.breakpointKey + "_" + this.options.breakpointSelector;
             if (instanceKey in instances) {
-                console.error("instance " + instanceKey + " already exists, using existing instance and calling refresh()...");
+                emitDebugMessage("instance " + instanceKey + " already exists, using existing instance and calling refresh()...");
                 if (!this.options.ignoreDOM) {
                     instances[instanceKey].refresh();
                 }
@@ -222,7 +206,6 @@
             };
             if (!this.options.ignoreDOM) {
                 this.refresh();
-                this.deployStyleSheet();
             }
         }
         Css.prototype.refresh = function () {
@@ -232,19 +215,18 @@
             for (var i = 0; i < nodes.length; i++) {
                 this.add(nodes[i]);
             }
+            this.deployStyleSheet();
             return nodes;
         };
         Css.prototype.add = function (node) {
-            var input = node.dataset.rsaStyle || '', parsed = {}, info = [];
+            var _this = this;
+            var input = node.dataset.rsaStyle || '', parsed = {};
             node.dataset.rsaIsProcessed = 'true';
             //todo remove class "rsa-uninitialized" from element, whether it
             //has the class or not ***AFTER*** the styles have been deployed
             //... so maybe add some other data attribute here, and match it
             //after deploy, then remove the data attr and the class
             //this should remove fouc. Also throw some events maybe...
-            //expose api to create stylesheets from strings like
-            //respStyleAttr.fromString('{json...}', options? ) -> [list of classes]
-            //then fetch stylesheet via respStyleAttr.get('...').getStyle() -> style with all styles of instances...
             try {
                 parsed = JSON.parse(input);
             }
@@ -252,26 +234,9 @@
                 emitDebugMessage("JSON.parse failed on: \"" + input + "\"");
                 return false;
             }
-            for (var key in parsed) {
-                var mediaQuery = this.keyToMediaQuery(key);
-                if (mediaQuery) {
-                    var style = this.reOrderStyles(parsed[key]), hash = cyrb53(mediaQuery + ":" + style, this.hashSeed), selector = this.options.selectorTemplate(hash);
-                    info.push({
-                        key: key,
-                        mediaQuery: mediaQuery,
-                        originalStyle: parsed[key],
-                        style: style,
-                        hash: hash,
-                        selector: selector
-                    });
-                    this.addStyle(mediaQuery, selector, style);
-                    this.options.selectorPropertyAttacher(node, hash);
-                }
-                else {
-                    emitDebugMessage("unrecognized mediaquery key \"" + key + "\"", 'warn');
-                }
-            }
-            return info;
+            this.push(parsed).forEach(function (hash) { return _this.options.selectorPropertyAttacher(node, hash); });
+            this.nodes.push(node);
+            return node;
         };
         Css.prototype.addStyle = function (mediaQuery, selector, styles) {
             if (!(mediaQuery in this.styles)) {
@@ -301,15 +266,10 @@
                 }
                 target.appendChild(el);
                 return el;
-            })(), content = [];
-            for (var mediaQuery in this.styles) {
-                content.push(mediaQuery + "{");
-                for (var selector in this.styles[mediaQuery]) {
-                    content.push("\t" + selector + "{ " + this.styles[mediaQuery][selector] + " }");
-                }
-                content.push('}');
-            }
-            node.innerHTML = content.join("\n");
+            })();
+            node.innerHTML = this.getCss();
+            this.nodes.forEach(function (node) { return node.classList.remove('rsa-pending'); });
+            node.dispatchEvent(new CustomEvent('rsa:cssdeployed', { bubbles: true, detail: this }));
         };
         Css.prototype.reOrderStyles = function (styleString) {
             return styleString.split(';')
@@ -348,6 +308,8 @@
                     }
                     else {
                         //attempt to check if feature exists and run feature
+                        //todo implement magic vars $node, $key(?) in custom feature that will pass the
+                        //current node or key to the custom feature as an argument
                         var featureMatches = this.regexps.featureMatcher.exec(fragment);
                         if (this.options.features && featureMatches && featureMatches[1] && featureMatches[1] in this.options.features) {
                             this.options.features[featureMatches[1]](mediaQueryParts, featureMatches[2]);
@@ -374,6 +336,46 @@
             }
             this.mediaQueries[key] = '@media ' + mediaQueries.join(', ');
             return this.mediaQueries[key];
+        };
+        /**
+         * great cyrb53 hash from https://stackoverflow.com/a/52171480
+         * @param str
+         * @param seed
+         */
+        Css.prototype.hash = function (str, seed) {
+            if (seed === void 0) { seed = 0; }
+            var h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+            for (var i = 0, ch = void 0; i < str.length; i++) {
+                ch = str.charCodeAt(i);
+                h1 = Math.imul(h1 ^ ch, 2654435761);
+                h2 = Math.imul(h2 ^ ch, 1597334677);
+            }
+            h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+            h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+            return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+        };
+        Css.prototype.getCss = function () {
+            var content = [];
+            for (var mediaQuery in this.styles) {
+                content.push(mediaQuery + "{");
+                for (var selector in this.styles[mediaQuery]) {
+                    content.push("\t" + selector + "{ " + this.styles[mediaQuery][selector] + " }");
+                }
+                content.push('}');
+            }
+            return content.join("\n");
+        };
+        Css.prototype.push = function (styleObject) {
+            if (typeof styleObject === 'string') {
+                styleObject = JSON.parse(styleObject);
+            }
+            var hashes = [];
+            for (var key in styleObject) {
+                var mediaQuery = this.keyToMediaQuery(key), style = this.reOrderStyles(styleObject[key]), hash = this.hash(mediaQuery + ":" + style, this.hashSeed), selector = this.options.selectorTemplate(hash);
+                this.addStyle(mediaQuery, selector, style);
+                hashes.push(hash);
+            }
+            return hashes;
         };
         return Css;
     }());

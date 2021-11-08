@@ -4,23 +4,6 @@ import {defaultOptions} from "./defaultOptions";
 
 export var instances: any = {};
 
-/**
- * great cyrb53 hash from https://stackoverflow.com/a/52171480
- * @param str
- * @param seed
- */
-const cyrb53 = (str: string, seed = 0) => {
-    let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
-    for (let i = 0, ch; i < str.length; i++) {
-        ch = str.charCodeAt(i);
-        h1 = Math.imul(h1 ^ ch, 2654435761);
-        h2 = Math.imul(h2 ^ ch, 1597334677);
-    }
-    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
-    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
-    return 4294967296 * (2097151 & h2) + (h1 >>> 0);
-};
-
 export class Css {
     breakpoints!: Breakpoints;
     mediaQueries: any = {};
@@ -28,6 +11,7 @@ export class Css {
     regexps: any = {};
     hashSeed: number = 0;
     options: any = {};
+    nodes: HTMLElement[] = [];
 
     constructor(options: any = {}) {
         this.options = Object.assign({}, defaultOptions, options);
@@ -36,7 +20,7 @@ export class Css {
         let instanceKey = `${this.options.breakpointKey}_${this.options.breakpointSelector}`;
 
         if (instanceKey in instances) {
-            console.error(`instance ${instanceKey} already exists, using existing instance and calling refresh()...`)
+            emitDebugMessage(`instance ${instanceKey} already exists, using existing instance and calling refresh()...`)
             if (!this.options.ignoreDOM) {
                 instances[instanceKey].refresh();
             }
@@ -56,7 +40,6 @@ export class Css {
 
         if (!this.options.ignoreDOM) {
             this.refresh();
-            this.deployStyleSheet();
         }
     }
 
@@ -72,10 +55,12 @@ export class Css {
             this.add(nodes[i] as HTMLElement);
         }
 
+        this.deployStyleSheet();
+
         return nodes;
     }
 
-    add(node: HTMLElement): object[] | boolean {
+    add(node: HTMLElement): HTMLElement | boolean {
         let input: string = node.dataset.rsaStyle || '',
             parsed: any = {},
             info: object[] = [];
@@ -89,10 +74,6 @@ export class Css {
 
         //this should remove fouc. Also throw some events maybe...
 
-        //expose api to create stylesheets from strings like
-        //respStyleAttr.fromString('{json...}', options? ) -> [list of classes]
-        //then fetch stylesheet via respStyleAttr.get('...').getStyle() -> style with all styles of instances...
-
         try {
             parsed = JSON.parse(input);
         } catch (e) {
@@ -100,30 +81,11 @@ export class Css {
             return false;
         }
 
+        this.push(parsed).forEach(hash => this.options.selectorPropertyAttacher(node, hash));
 
-        for (let key in parsed) {
-            let mediaQuery = this.keyToMediaQuery(key);
-            if (mediaQuery) {
-                let style = this.reOrderStyles(parsed[key]),
-                    hash = cyrb53(`${mediaQuery}:${style}`, this.hashSeed),
-                    selector = this.options.selectorTemplate(hash);
+        this.nodes.push(node);
 
-                info.push({
-                    key,
-                    mediaQuery,
-                    originalStyle: parsed[key],
-                    style,
-                    hash,
-                    selector
-                });
-
-                this.addStyle(mediaQuery, selector, style);
-                this.options.selectorPropertyAttacher(node, hash);
-            } else {
-                emitDebugMessage(`unrecognized mediaquery key "${key}"`, 'warn');
-            }
-        }
-        return info;
+        return node;
     };
 
     addStyle(mediaQuery: string, selector: string, styles: string): boolean {
@@ -156,17 +118,13 @@ export class Css {
                 }
                 target.appendChild(el);
                 return el;
-            })(), content = [];
+            })();
 
-        for (const mediaQuery in this.styles) {
-            content.push(`${mediaQuery}{`);
-            for (const selector in this.styles[mediaQuery]) {
-                content.push(`\t${selector}{ ${this.styles[mediaQuery][selector]} }`);
-            }
-            content.push('}');
-        }
+        node.innerHTML = this.getCss();
 
-        node.innerHTML = content.join("\n")
+        this.nodes.forEach(node => node.classList.remove('rsa-pending'));
+
+        node.dispatchEvent(new CustomEvent('rsa:cssdeployed', {bubbles : true, detail: this}));
     };
 
     reOrderStyles(styleString: string): string {
@@ -206,10 +164,12 @@ export class Css {
                 } else if (this.breakpoints.test(fragment)) {
                     this.breakpoints.processKey(mediaQueryParts, fragment);
                 } else if (fragment[0] === '(') {
-                    mediaQueryParts[':' + fragment] = fragment.slice(1,-1);
+                    mediaQueryParts[':' + fragment] = fragment.slice(1, -1);
 
                 } else {
                     //attempt to check if feature exists and run feature
+                    //todo implement magic vars $node, $key(?) in custom feature that will pass the
+                    //current node or key to the custom feature as an argument
                     let featureMatches = this.regexps.featureMatcher.exec(fragment);
                     if (this.options.features && featureMatches! && featureMatches[1] && featureMatches[1] in this.options.features) {
                         this.options.features[featureMatches[1]](mediaQueryParts, featureMatches[2]);
@@ -240,4 +200,54 @@ export class Css {
         return this.mediaQueries[key];
 
     };
+
+    /**
+     * great cyrb53 hash from https://stackoverflow.com/a/52171480
+     * @param str
+     * @param seed
+     */
+    hash(str: string, seed = 0) {
+        let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+        for (let i = 0, ch; i < str.length; i++) {
+            ch = str.charCodeAt(i);
+            h1 = Math.imul(h1 ^ ch, 2654435761);
+            h2 = Math.imul(h2 ^ ch, 1597334677);
+        }
+        h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+        h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+        return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+
+    };
+
+    getCss(): string {
+        let content = [];
+        for (const mediaQuery in this.styles) {
+            content.push(`${mediaQuery}{`);
+            for (const selector in this.styles[mediaQuery]) {
+                content.push(`\t${selector}{ ${this.styles[mediaQuery][selector]} }`);
+            }
+            content.push('}');
+        }
+
+        return content.join("\n");
+    };
+
+    push(styleObject: any): number[] {
+        if (typeof styleObject === 'string') {
+            styleObject = JSON.parse(styleObject);
+        }
+
+        let hashes: number[] = [];
+
+        for (const key in styleObject) {
+            const mediaQuery = this.keyToMediaQuery(key),
+                style = this.reOrderStyles(styleObject[key]),
+                hash = this.hash(`${mediaQuery}:${style}`, this.hashSeed),
+                selector = this.options.selectorTemplate(hash);
+            this.addStyle(mediaQuery, selector, style);
+            hashes.push(hash);
+        }
+
+        return hashes;
+    }
 }

@@ -46,8 +46,6 @@ export class Breakpoints {
         //todo dont run all regexps at once
         //todo implement run order in options
 
-        //todo media queries must also match \wte? at beginning
-
         let upper: string | null = null,
             lower: string | null = null;
 
@@ -136,26 +134,28 @@ export class Breakpoints {
             propertyName = `--breakpoints-${this.key}`,
             keys: string[] = [];
 
-        if (this.options.breakpoints) {
-            this.breakpoints = this.options.breakpoints;
-        } else {
-            computedStyle = getComputedStyle(document.querySelector(this.selector) || document.documentElement);
-            breakpointDefinition = computedStyle.getPropertyValue(propertyName);
-            if (!breakpointDefinition) {
-                emitDebugMessage(`No JSON breakpoint definition found for "${this.selector} { ${propertyName}: ... ; }"`, 'error')
+
+            if (this.options.breakpoints) {
+                this.breakpoints = this.options.breakpoints;
+            } else if(typeof window !== 'undefined') {
+                computedStyle = getComputedStyle(document.querySelector(this.selector) || document.documentElement);
+                breakpointDefinition = computedStyle.getPropertyValue(propertyName);
+                if (!breakpointDefinition) {
+                    emitDebugMessage(`No JSON breakpoint definition found for "${this.selector} { ${propertyName}: ... ; }"`, 'error')
+                }
+                try {
+                    this.breakpoints = JSON.parse(breakpointDefinition);
+                } catch (error: any) {
+                    emitDebugMessage(`JSON.parse failed for breakpoint definition of "${this.selector} { ${propertyName}: ... ; }": ${error.message}`, 'error')
+                    emitDebugMessage(`JSON given "${breakpointDefinition}"`, 'error')
+                    this.breakpoints = [['undefined', '0px']];
+                }
+                if (!(this.breakpoints instanceof Array)) {
+                    emitDebugMessage('JSON parse of given breakpoints did not yield expected array in format [["key", "value"], ...]');
+                    this.breakpoints = [['undefined', '0px']];
+                }
             }
-            try {
-                this.breakpoints = JSON.parse(breakpointDefinition);
-            } catch (error: any) {
-                emitDebugMessage(`JSON.parse failed for breakpoint definition of "${this.selector} { ${propertyName}: ... ; }": ${error.message}`, 'error')
-                emitDebugMessage(`JSON given "${breakpointDefinition}"`, 'error')
-                this.breakpoints = [['undefined', '0px']];
-            }
-            if (!(this.breakpoints instanceof Array)) {
-                emitDebugMessage('JSON parse of given breakpoints did not yield expected array in format [["key", "value"], ...]');
-                this.breakpoints = [['undefined', '0px']];
-            }
-        }
+
 
         this.breakpoints.forEach((item: any) => {
             this.keyMap.push(item[0]);
