@@ -20,9 +20,9 @@ describe("Style Property reordering", function () {
         }),
         shouldBeEqual = {
             'border: 1px solid red; outline: none; width: 255px': 'width: 255px; border:1px solid red; outline : none',
-            '--var-asdf: "yo"; --var-xyz: "wassup"' : ' --var-xyz: "wassup"; --var-asdf: "yo";',
-            ';display:flex' : ' display   : flex;',
-            ';border-color:green; border-color:  blue; border-color: red' : 'border-color:red;border-color:green;border-color:blue;'
+            '--var-asdf: "yo"; --var-xyz: "wassup"': ' --var-xyz: "wassup"; --var-asdf: "yo";',
+            ';display:flex': ' display   : flex;',
+            ';border-color:green; border-color:  blue; border-color: red': 'border-color:red;border-color:green;border-color:blue;'
         };
 
     for (const [k, v] of Object.entries(shouldBeEqual)) {

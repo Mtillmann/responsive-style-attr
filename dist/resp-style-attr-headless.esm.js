@@ -231,7 +231,6 @@ var Css = /** @class */ (function () {
         };
         if (!this.options.ignoreDOM) {
             this.refresh();
-            this.deployStyleSheet();
         }
     }
     Css.prototype.refresh = function () {
@@ -241,6 +240,7 @@ var Css = /** @class */ (function () {
         for (var i = 0; i < nodes.length; i++) {
             this.add(nodes[i]);
         }
+        this.deployStyleSheet();
         return nodes;
     };
     Css.prototype.add = function (node) {
@@ -294,7 +294,7 @@ var Css = /** @class */ (function () {
         })();
         node.innerHTML = this.getCss();
         this.nodes.forEach(function (node) { return node.classList.remove('rsa-pending'); });
-        node.dispatchEvent(new CustomEvent('rsa:cssdeployed', { bubbles: true, detail: { instance: this, stylesheet: node } }));
+        node.dispatchEvent(new CustomEvent('rsa:cssdeployed', { bubbles: true, detail: this }));
     };
     Css.prototype.reOrderStyles = function (styleString) {
         return styleString.split(';')
@@ -333,6 +333,8 @@ var Css = /** @class */ (function () {
                 }
                 else {
                     //attempt to check if feature exists and run feature
+                    //todo implement magic vars $node, $key(?) in custom feature that will pass the
+                    //current node or key to the custom feature as an argument
                     var featureMatches = this.regexps.featureMatcher.exec(fragment);
                     if (this.options.features && featureMatches && featureMatches[1] && featureMatches[1] in this.options.features) {
                         this.options.features[featureMatches[1]](mediaQueryParts, featureMatches[2]);

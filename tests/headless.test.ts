@@ -26,7 +26,7 @@ describe('headless usage', function () {
         const instance = new Headless({
                 breakpointKey: Math.random()
             }),
-            result:string = instance.parse(`
+            result: string = instance.parse(`
                    <div data-rsa-style='{"lt-400px":"border: 1px solid #000"}'></div>
                    <div data-rsa-style='{"lt-600px@gt-400px":"border: 1px solid #f00"}'></div>
                    <div data-rsa-style='{"gte-900px":"border: 1px solid #00f"}'></div>
@@ -143,17 +143,17 @@ describe('headless usage', function () {
                    <div data-rsa-style='{"gt-md" : "margin:20px;"}'></div>
             `);
 
-        let css:string = instance.getCss();
+        let css: string = instance.getCss();
 
         expect(new RegExp(`min-width: ${md}`).test(css)).toBe(true);
     });
 
     it('creates media queries and selectors from string and objects', () => {
         const instance = new Headless({
-                breakpointKey: Math.random()
-            });
+            breakpointKey: Math.random()
+        });
 
-        instance.push({"500px-up" : "color:green", "800px-up" : "color:blue"})
+        instance.push({"500px-up": "color:green", "800px-up": "color:blue"})
         instance.push('{"500px-down" : "color:green", "800px-to-1200px" : "color:blue"}')
 
         expect(instance.getCss().match(/]{/g).length).toEqual(4)

@@ -5,7 +5,6 @@
 import * as RespStyleAttr from "../src/main";
 
 
-
 describe("Key To Media Query Expansion", function () {
     const xs = '0',
         sm = '576px',
@@ -26,46 +25,46 @@ describe("Key To Media Query Expansion", function () {
             breakpoints,
             ignoreDOM: true,
             features: {
-                alwaysTrue: function (mediaQuery:any) {
+                alwaysTrue: function (mediaQuery: any) {
                     mediaQuery.media = 'all'
                 },
-                alwaysFalse: function (mediaQuery:any) {
+                alwaysFalse: function (mediaQuery: any) {
                     mediaQuery.media = 'none'
                 },
-                simpleValue: function (mediaQuery:any, simpleArg:any) {
+                simpleValue: function (mediaQuery: any, simpleArg: any) {
                     mediaQuery['simple-value'] = simpleArg;
                 },
-                complexValue: function (mediaQuery:any, complexArg:any) {
-                    mediaQuery['complex-value'] = complexArg.split(',').map((v:string) => Number(v.trim())).reduce((a, b) => a + b);
+                complexValue: function (mediaQuery: any, complexArg: any) {
+                    mediaQuery['complex-value'] = complexArg.split(',').map((v: string) => Number(v.trim())).reduce((a, b) => a + b);
                 },
-                androidOnly: function (mediaQuery:any) {
+                androidOnly: function (mediaQuery: any) {
                     if (!/android/i.test(userAgent)) {
                         mediaQuery.media = 'none';
                     }
                 },
-                uaMustMatch: function (mediaQuery:any, input:any) {
+                uaMustMatch: function (mediaQuery: any, input: any) {
                     const re = new RegExp(input, 'i');
                     if (!re.test(userAgent)) {
                         mediaQuery.media = 'none';
                     }
                 },
-                wkmdpr: function (mediaQuery:any, devicePixelRatio:any) {
+                wkmdpr: function (mediaQuery: any, devicePixelRatio: any) {
                     mediaQuery['-webkit-min-device-pixel-ratio'] = devicePixelRatio;
                 },
-                keyValue: function (mediaQuery:any, args:any) {
+                keyValue: function (mediaQuery: any, args: any) {
                     const [key, value] = args.split(',');
                     mediaQuery[key] = value;
                 },
-                set: function (mediaQuery:any, feature:any) {
+                set: function (mediaQuery: any, feature: any) {
                     mediaQuery[feature] = true;
                 },
-                unset: function (mediaQuery:any, feature:any) {
+                unset: function (mediaQuery: any, feature: any) {
                     mediaQuery[feature] = false;
                 }
             }
         }),
 
-        substractedMaxValue = (input:string) => {
+        substractedMaxValue = (input: string) => {
             let value = parseFloat(input),
                 unit = input.replace(String(value), '');
 

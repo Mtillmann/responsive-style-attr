@@ -197,6 +197,17 @@ describe('Tests Css Constructor options and methods', function () {
         return expect(nodes.length).toBe(0);
     });
 
+
+    it('deploys styles of nodes after refresh', function () {
+        const css = RespStyleAttr.get('default_html');
+        document.body.insertAdjacentHTML('beforeend', `
+           <div data-rsa-style='{"gt-777px" : "color:green"}'></div>
+        `);
+
+        css.refresh();
+        return expect(document.getElementById(`rsa-stylesheet-${css.hashSeed}`).innerHTML).toMatch(/777/);
+    });
+
     it('picks up new nodes from dom upon refresh for non default options', function () {
         document.body.insertAdjacentHTML('beforeend', `
             <style type="text/css">
@@ -270,7 +281,7 @@ describe('Tests Css Constructor options and methods', function () {
         })
 
         new RespStyleAttr.Css({
-            breakpointKey : 'event-test'
+            breakpointKey: 'event-test'
         });
 
         expect(eventHit).toBeTruthy();

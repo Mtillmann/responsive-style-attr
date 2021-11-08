@@ -5,7 +5,6 @@
 import * as RespStyleAttr from "../src/main";
 
 
-
 describe('helpers and such', function () {
 
     it('attaches new instances to the internal instance map', function () {
@@ -33,7 +32,7 @@ describe('helpers and such', function () {
         expect(document.getElementById('inittest').dataset.rsaIsProcessed).toBe('true')
     });
 
-    it('ignores broken breakpoints json and fails silently / logs to console', function(){
+    it('ignores broken breakpoints json and fails silently / logs to console', function () {
         document.body.insertAdjacentHTML('beforeend', `
             <style>
                 html{

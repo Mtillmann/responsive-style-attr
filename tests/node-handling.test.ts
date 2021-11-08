@@ -62,21 +62,21 @@ describe("Extracting styles from nodes", function () {
 
     });
 
-    it('yields style node', function (){
+    it('yields style node', function () {
         css.deployStyleSheet();
         const stylesheets = sandbox.querySelectorAll('style');
         expect(stylesheets.length).toBe(1)
     });
 
 
-    it('does not create new style node after deploy', function (){
+    it('does not create new style node after deploy', function () {
         css.deployStyleSheet();
         const stylesheets = sandbox.querySelectorAll('style');
         expect(stylesheets.length).toBe(1)
     });
 
 
-    it('updates existing style after add and deploy', function (){
+    it('updates existing style after add and deploy', function () {
         const currentCss = sandbox.querySelector('style').innerHTML;
         css.add(elements[4]);
         css.deployStyleSheet();
@@ -84,13 +84,13 @@ describe("Extracting styles from nodes", function () {
     });
 
 
-    it('doesn\'t update existing style after repeat deploy', function (){
+    it('doesn\'t update existing style after repeat deploy', function () {
         const currentCss = sandbox.querySelector('style').innerHTML;
         css.deployStyleSheet();
         expect(sandbox.querySelector('style').innerHTML).toBe(currentCss);
     });
 
-    it('contains generated selectors', function (){
+    it('contains generated selectors', function () {
         const currentCss = sandbox.querySelector('style').innerHTML;
 
         expect(currentCss.indexOf(elements[0].classList[0])).toBeGreaterThan(0);
@@ -103,7 +103,7 @@ describe("Extracting styles from nodes", function () {
 
 
         new RespStyleAttr.Css({
-            breakpointKey : 'class-remove-test'
+            breakpointKey: 'class-remove-test'
         });
 
         const stillHasPendingClass = document.body.querySelector('[data-rsa-key="class-remove-test"]').classList.contains('rsa-pending');
