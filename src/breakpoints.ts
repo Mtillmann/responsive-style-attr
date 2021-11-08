@@ -46,8 +46,6 @@ export class Breakpoints {
         //todo dont run all regexps at once
         //todo implement run order in options
 
-        //todo media queries must also match \wte? at beginning
-
         let upper: string | null = null,
             lower: string | null = null;
 

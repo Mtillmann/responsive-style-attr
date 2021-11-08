@@ -96,4 +96,20 @@ describe("Extracting styles from nodes", function () {
         expect(currentCss.indexOf(elements[0].classList[0])).toBeGreaterThan(0);
     });
 
+    it('removes the "rsa-pending" from processed nodes', () => {
+        document.body.insertAdjacentHTML('beforeend', `
+             <div class="rsa-pending" data-rsa-key="class-remove-test" data-rsa-style='{"gt-500px":"color:blue"}'></div>
+        `);
+
+
+        new RespStyleAttr.Css({
+            breakpointKey : 'class-remove-test'
+        });
+
+        const stillHasPendingClass = document.body.querySelector('[data-rsa-key="class-remove-test"]').classList.contains('rsa-pending');
+
+        expect(stillHasPendingClass).not.toBeTruthy();
+
+    })
+
 });

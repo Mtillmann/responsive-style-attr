@@ -258,6 +258,22 @@ describe('Tests Css Constructor options and methods', function () {
         expect(css.keyToMediaQuery('500px')).toBe('@media (min-width: 500px)');
     });
 
-    //todo check handling of prepend mediatype
+    it('dispatches events when stylesheet is deployed', () => {
+        document.body.insertAdjacentHTML('beforeend', `
+            <div data-rsa-key="event-test" data-rsa-style='{"gt-500px":"color:blue"}'></div>
+        `);
+
+        let eventHit = false;
+
+        document.documentElement.addEventListener('rsa:cssdeployed', (e) => {
+            eventHit = true;
+        })
+
+        new RespStyleAttr.Css({
+            breakpointKey : 'event-test'
+        });
+
+        expect(eventHit).toBeTruthy();
+    })
 
 });

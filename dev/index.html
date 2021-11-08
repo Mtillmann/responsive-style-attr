@@ -70,6 +70,9 @@
 <script src="js/rsa.dev.umd.js"></script>
 
 <script>
+    window.addEventListener('rsa:cssdeployed', e => {
+        console.log(e)
+    })
     window.addEventListener('DOMContentLoaded', function () {
 
         document.body.insertAdjacentHTML('beforeend', `

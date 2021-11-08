@@ -11,6 +11,7 @@ export class Css {
     regexps: any = {};
     hashSeed: number = 0;
     options: any = {};
+    nodes: HTMLElement[] = [];
 
     constructor(options: any = {}) {
         this.options = Object.assign({}, defaultOptions, options);
@@ -72,10 +73,6 @@ export class Css {
 
         //this should remove fouc. Also throw some events maybe...
 
-        //expose api to create stylesheets from strings like
-        //respStyleAttr.fromString('{json...}', options? ) -> [list of classes]
-        //then fetch stylesheet via respStyleAttr.get('...').getStyle() -> style with all styles of instances...
-
         try {
             parsed = JSON.parse(input);
         } catch (e) {
@@ -84,6 +81,8 @@ export class Css {
         }
 
         this.push(parsed).forEach(hash => this.options.selectorPropertyAttacher(node, hash));
+
+        this.nodes.push(node);
 
         return node;
     };
@@ -121,6 +120,10 @@ export class Css {
             })();
 
         node.innerHTML = this.getCss();
+
+        this.nodes.forEach(node => node.classList.remove('rsa-pending'));
+
+        node.dispatchEvent(new CustomEvent('rsa:cssdeployed', {bubbles : true, detail: {instance: this, stylesheet: node}}));
     };
 
     reOrderStyles(styleString: string): string {
@@ -231,7 +234,7 @@ export class Css {
             styleObject = JSON.parse(styleObject);
         }
 
-        let hashes:number[] = [];
+        let hashes: number[] = [];
 
         for (const key in styleObject) {
             const mediaQuery = this.keyToMediaQuery(key),

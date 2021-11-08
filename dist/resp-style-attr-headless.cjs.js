@@ -84,7 +84,6 @@ var Breakpoints = /** @class */ (function () {
         var isOnly = this.regexps.isOnly.test(keyToParse), isGT = this.regexps.isGT.test(keyToParse), isLT = this.regexps.isLT.test(keyToParse), isBetween = this.regexps.isBetween.test(keyToParse), usesOnlyBreakpointKeys = this.regexps.usesOnlyBreakpointKeys.exec(keyToParse), usesMixedValues = this.regexps.usesMixedValues.exec(keyToParse), compareEquality = /^\wte/.test(keyToParse);
         //todo dont run all regexps at once
         //todo implement run order in options
-        //todo media queries must also match \wte? at beginning
         var upper = null, lower = null;
         if (usesMixedValues) {
             if (usesMixedValues[1] && usesMixedValues[2]) {
@@ -215,11 +214,12 @@ var Css = /** @class */ (function () {
         this.regexps = {};
         this.hashSeed = 0;
         this.options = {};
+        this.nodes = [];
         this.options = Object.assign({}, defaultOptions, options);
         //todo use spread syntax
         var instanceKey = this.options.breakpointKey + "_" + this.options.breakpointSelector;
         if (instanceKey in instances) {
-            console.error("instance " + instanceKey + " already exists, using existing instance and calling refresh()...");
+            emitDebugMessage("instance " + instanceKey + " already exists, using existing instance and calling refresh()...");
             if (!this.options.ignoreDOM) {
                 instances[instanceKey].refresh();
             }
@@ -256,9 +256,6 @@ var Css = /** @class */ (function () {
         //... so maybe add some other data attribute here, and match it
         //after deploy, then remove the data attr and the class
         //this should remove fouc. Also throw some events maybe...
-        //expose api to create stylesheets from strings like
-        //respStyleAttr.fromString('{json...}', options? ) -> [list of classes]
-        //then fetch stylesheet via respStyleAttr.get('...').getStyle() -> style with all styles of instances...
         try {
             parsed = JSON.parse(input);
         }
@@ -267,6 +264,7 @@ var Css = /** @class */ (function () {
             return false;
         }
         this.push(parsed).forEach(function (hash) { return _this.options.selectorPropertyAttacher(node, hash); });
+        this.nodes.push(node);
         return node;
     };
     Css.prototype.addStyle = function (mediaQuery, selector, styles) {
@@ -299,6 +297,8 @@ var Css = /** @class */ (function () {
             return el;
         })();
         node.innerHTML = this.getCss();
+        this.nodes.forEach(function (node) { return node.classList.remove('rsa-pending'); });
+        node.dispatchEvent(new CustomEvent('rsa:cssdeployed', { bubbles: true, detail: { instance: this, stylesheet: node } }));
     };
     Css.prototype.reOrderStyles = function (styleString) {
         return styleString.split(';')
