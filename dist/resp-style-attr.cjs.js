@@ -76,9 +76,7 @@ var Breakpoints = /** @class */ (function () {
         return this.regexps.test.test(keyToTest);
     };
     Breakpoints.prototype.processKey = function (mediaQuery, keyToParse) {
-        var isOnly = this.regexps.isOnly.test(keyToParse), isGT = this.regexps.isGT.test(keyToParse), isLT = this.regexps.isLT.test(keyToParse), isBetween = this.regexps.isBetween.test(keyToParse), usesOnlyBreakpointKeys = this.regexps.usesOnlyBreakpointKeys.exec(keyToParse), usesMixedValues = this.regexps.usesMixedValues.exec(keyToParse), compareEquality = /^\wte/.test(keyToParse);
-        //todo dont run all regexps at once
-        //todo implement run order in options
+        var usesOnlyBreakpointKeys = this.regexps.usesOnlyBreakpointKeys.exec(keyToParse), usesMixedValues = this.regexps.usesMixedValues.exec(keyToParse), compareEquality = /^\wte/.test(keyToParse);
         var upper = null, lower = null;
         if (usesMixedValues) {
             if (usesMixedValues[1] && usesMixedValues[2]) {
@@ -92,6 +90,7 @@ var Breakpoints = /** @class */ (function () {
         }
         else if (usesOnlyBreakpointKeys) {
             var first = usesOnlyBreakpointKeys[1], second = usesOnlyBreakpointKeys[2];
+            var isOnly = this.regexps.isOnly.test(keyToParse), isLT = this.regexps.isLT.test(keyToParse), isBetween = this.regexps.isBetween.test(keyToParse);
             lower = this.value(first);
             if (isOnly) {
                 var next = this.next(first);
@@ -109,7 +108,7 @@ var Breakpoints = /** @class */ (function () {
             }
         }
         else {
-            var actualBreakpoints = this.regexps.actualBreakpoints.exec(keyToParse);
+            var actualBreakpoints = this.regexps.actualBreakpoints.exec(keyToParse), isGT = this.regexps.isGT.test(keyToParse), isLT = this.regexps.isLT.test(keyToParse), isBetween = this.regexps.isBetween.test(keyToParse);
             if (actualBreakpoints) {
                 if (isBetween) {
                     lower = actualBreakpoints[1];
