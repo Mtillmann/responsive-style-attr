@@ -14,9 +14,8 @@ export class Css {
     nodes: HTMLElement[] = [];
 
     constructor(options: any = {}) {
-        this.options = Object.assign({}, defaultOptions, options);
+        this.options = {...defaultOptions, ...options};
 
-        //todo use spread syntax
         let instanceKey = `${this.options.breakpointKey}_${this.options.breakpointSelector}`;
 
         if (instanceKey in instances) {
@@ -67,13 +66,6 @@ export class Css {
 
         node.dataset.rsaIsProcessed = 'true';
 
-        //todo remove class "rsa-uninitialized" from element, whether it
-        //has the class or not ***AFTER*** the styles have been deployed
-        //... so maybe add some other data attribute here, and match it
-        //after deploy, then remove the data attr and the class
-
-        //this should remove fouc. Also throw some events maybe...
-
         try {
             parsed = JSON.parse(input);
         } catch (e) {
@@ -81,7 +73,7 @@ export class Css {
             return false;
         }
 
-        this.push(parsed).forEach(hash => this.options.selectorPropertyAttacher(node, hash));
+        this.push(parsed, node).forEach(hash => this.options.selectorPropertyAttacher(node, hash));
 
         this.nodes.push(node);
 
@@ -124,22 +116,17 @@ export class Css {
 
         this.nodes.forEach(node => node.classList.remove('rsa-pending'));
 
-        node.dispatchEvent(new CustomEvent('rsa:cssdeployed', {bubbles : true, detail: this}));
+        node.dispatchEvent(new CustomEvent('rsa:cssdeployed', {bubbles: true, detail: this}));
     };
 
     reOrderStyles(styleString: string): string {
         return styleString.split(';')
             .filter(e => e.trim() !== '')
-            .map(e => {
-                e = e.trim().split(':')
-                    .map(p => p.trim())
-                    .join(':');
-                //todo replace split/join with regexp?
-                return e;
-            }).sort().join(';');
+            .map(e => e.trim().replace(/\s*:\s*/g,':'))
+            .sort().join(';');
     }
 
-    keyToMediaQuery(key: string): string {
+    keyToMediaQuery(key: string, node: null | HTMLElement): string {
         if (key in this.mediaQueries) {
             return this.mediaQueries[key];
         }
@@ -168,11 +155,10 @@ export class Css {
 
                 } else {
                     //attempt to check if feature exists and run feature
-                    //todo implement magic vars $node, $key(?) in custom feature that will pass the
-                    //current node or key to the custom feature as an argument
                     let featureMatches = this.regexps.featureMatcher.exec(fragment);
                     if (this.options.features && featureMatches! && featureMatches[1] && featureMatches[1] in this.options.features) {
-                        this.options.features[featureMatches[1]](mediaQueryParts, featureMatches[2]);
+
+                        this.options.features[featureMatches[1]](...[mediaQueryParts, featureMatches[2], key, node]);
                     }
                 }
             }
@@ -232,7 +218,8 @@ export class Css {
         return content.join("\n");
     };
 
-    push(styleObject: any): number[] {
+
+    push(styleObject: any, node: null | HTMLElement = null): number[] {
         if (typeof styleObject === 'string') {
             styleObject = JSON.parse(styleObject);
         }
@@ -240,7 +227,7 @@ export class Css {
         let hashes: number[] = [];
 
         for (const key in styleObject) {
-            const mediaQuery = this.keyToMediaQuery(key),
+            const mediaQuery = this.keyToMediaQuery(key, node),
                 style = this.reOrderStyles(styleObject[key]),
                 hash = this.hash(`${mediaQuery}:${style}`, this.hashSeed),
                 selector = this.options.selectorTemplate(hash);

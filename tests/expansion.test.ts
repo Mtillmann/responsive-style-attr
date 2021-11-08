@@ -170,5 +170,38 @@ describe("Key To Media Query Expansion", function () {
         });
     }
 
-})
-;
+    it('passes node to custom features function when applicable', () => {
+        document.body.insertAdjacentHTML('beforeend',`
+            <div data-rsa-style='{"withArgs(1,2,3)":"color:blue"}' data-some-property="dings"></div>
+        `);
+
+        const css = new RespStyleAttr.Css({
+            features : {
+                withArgs(mediaQuery,argsString,key,node){
+                    mediaQuery[node.dataset.someProperty] = '"taken from node data attribute"';
+                }
+            }
+        });
+
+        expect(css.getCss()).toMatch(/dings/)
+    });
+
+
+    it('passes node to custom features function without arguments', () => {
+        document.body.insertAdjacentHTML('beforeend',`
+            <div data-rsa-key="args2" data-rsa-style='{"withoutArgs":"color:blue"}' data-some-property="bums"></div>
+        `);
+
+        const css = new RespStyleAttr.Css({
+            breakpointKey : 'args2',
+            features : {
+                withoutArgs(mediaQuery,argsString,key,node){
+                    mediaQuery[node.dataset.someProperty] = '"taken from node data attribute"';
+                }
+            }
+        });
+
+        expect(css.getCss()).toMatch(/bums/)
+    });
+
+});

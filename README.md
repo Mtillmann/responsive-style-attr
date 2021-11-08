@@ -181,6 +181,20 @@ If you set a feature to `true` it will be written without a value. This is usefu
 
 If you prefix the feature key with `:` the key will be omitted from the final media query and only the value will be used. This can be handy for things like level 4 range context where the expression is not in `key: value` format.
 
+The full signature of a custom feature function is
+
+```javascript
+/**
+ * @param mediaQuery    object   media query map (object) that's currently constructed
+ * @param inputArgs     string|undefined  string of the arguments 
+ * @param currentKey    string   the key that's currently expanded
+ * @param currentNode   HTMLElement|null  the node thats currently operated on, if instance runs in DOM context
+ */
+someFeature(mediaQuery, inputArgs, currentKey, currentNode) {
+    //...
+}
+```
+
 See `test/expansion.spec.js` for a few more examples.
 
 ## Options
