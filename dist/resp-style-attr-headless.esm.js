@@ -308,6 +308,7 @@ var Css = /** @class */ (function () {
     };
     Css.prototype.keyToMediaQuery = function (key, node) {
         var _a;
+        if (node === void 0) { node = null; }
         if (key in this.mediaQueries) {
             return this.mediaQueries[key];
         }

@@ -126,11 +126,11 @@ export class Css {
             .sort().join(';');
     }
 
-    keyToMediaQuery(key: string, node: null | HTMLElement): string {
+    keyToMediaQuery(key: string, node: null | HTMLElement = null): string {
         if (key in this.mediaQueries) {
             return this.mediaQueries[key];
         }
-
+ 
         let queries = key.split('@,@'),
             mediaQueries: string[] = [];
         for (let queryIndex = 0; queryIndex < queries.length; queryIndex++) {
