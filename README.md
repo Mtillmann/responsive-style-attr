@@ -13,6 +13,8 @@ The package contains three frontend builds:
 - `dist/resp-style-attr.umd(.min).js` - UMD build, suitable for use in any environment (including the browser, as
   a `<script>` tag)
 
+> The size of the minified script is ~9kb (~3.5kb gzipped)
+
 There are two builds for headless operation:
 
 - `dist/resp-style-attr-headless.cjs.js` - CommonJS bundle, suitable for use in Node.js

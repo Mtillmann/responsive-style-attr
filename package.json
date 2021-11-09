@@ -29,7 +29,7 @@
   "scripts": {
     "merge": "git checkout dev -- dist src tests README.md package.json package-lock.json rollup.config.js tsconfig.json rollup.dev-config.js rollup.headless-config.js jest.config.js",
     "build": "npm run ts:build-dev && npm run ts:build && npm run ts:build-headless && npm run js:build-min",
-    "js:build-min": "terser dist/resp-style-attr.umd.js --compress --mangle --output dist/resp-style-attr.umd.min.js",
+    "js:build-min": "terser dist/resp-style-attr.umd.js --compress --mangle --comments false --output dist/resp-style-attr.umd.min.js",
     "ts:build": "rollup -c",
     "ts:build-headless": "rollup -c \"rollup.headless-config.js\"",
     "ts:dev": "rollup --config \"rollup.dev-config.js\" -w",
