@@ -2,6 +2,32 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
+/*! *****************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+
+var __assign = function() {
+    __assign = Object.assign || function __assign(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+
 var defaultOptions = {
     debug: false,
     breakpointSelector: 'html',
@@ -50,9 +76,7 @@ var Breakpoints = /** @class */ (function () {
         return this.regexps.test.test(keyToTest);
     };
     Breakpoints.prototype.processKey = function (mediaQuery, keyToParse) {
-        var isOnly = this.regexps.isOnly.test(keyToParse), isGT = this.regexps.isGT.test(keyToParse), isLT = this.regexps.isLT.test(keyToParse), isBetween = this.regexps.isBetween.test(keyToParse), usesOnlyBreakpointKeys = this.regexps.usesOnlyBreakpointKeys.exec(keyToParse), usesMixedValues = this.regexps.usesMixedValues.exec(keyToParse), compareEquality = /^\wte/.test(keyToParse);
-        //todo dont run all regexps at once
-        //todo implement run order in options
+        var usesOnlyBreakpointKeys = this.regexps.usesOnlyBreakpointKeys.exec(keyToParse), usesMixedValues = this.regexps.usesMixedValues.exec(keyToParse), compareEquality = /^\wte/.test(keyToParse);
         var upper = null, lower = null;
         if (usesMixedValues) {
             if (usesMixedValues[1] && usesMixedValues[2]) {
@@ -66,6 +90,7 @@ var Breakpoints = /** @class */ (function () {
         }
         else if (usesOnlyBreakpointKeys) {
             var first = usesOnlyBreakpointKeys[1], second = usesOnlyBreakpointKeys[2];
+            var isOnly = this.regexps.isOnly.test(keyToParse), isLT = this.regexps.isLT.test(keyToParse), isBetween = this.regexps.isBetween.test(keyToParse);
             lower = this.value(first);
             if (isOnly) {
                 var next = this.next(first);
@@ -83,7 +108,7 @@ var Breakpoints = /** @class */ (function () {
             }
         }
         else {
-            var actualBreakpoints = this.regexps.actualBreakpoints.exec(keyToParse);
+            var actualBreakpoints = this.regexps.actualBreakpoints.exec(keyToParse), isGT = this.regexps.isGT.test(keyToParse), isLT = this.regexps.isLT.test(keyToParse), isBetween = this.regexps.isBetween.test(keyToParse);
             if (actualBreakpoints) {
                 if (isBetween) {
                     lower = actualBreakpoints[1];
@@ -184,8 +209,7 @@ var Css = /** @class */ (function () {
         this.hashSeed = 0;
         this.options = {};
         this.nodes = [];
-        this.options = Object.assign({}, defaultOptions, options);
-        //todo use spread syntax
+        this.options = __assign(__assign({}, defaultOptions), options);
         var instanceKey = this.options.breakpointKey + "_" + this.options.breakpointSelector;
         if (instanceKey in instances) {
             emitDebugMessage("instance " + instanceKey + " already exists, using existing instance and calling refresh()...");
@@ -220,11 +244,6 @@ var Css = /** @class */ (function () {
         var _this = this;
         var input = node.dataset.rsaStyle || '', parsed = {};
         node.dataset.rsaIsProcessed = 'true';
-        //todo remove class "rsa-uninitialized" from element, whether it
-        //has the class or not ***AFTER*** the styles have been deployed
-        //... so maybe add some other data attribute here, and match it
-        //after deploy, then remove the data attr and the class
-        //this should remove fouc. Also throw some events maybe...
         try {
             parsed = JSON.parse(input);
         }
@@ -232,7 +251,7 @@ var Css = /** @class */ (function () {
             emitDebugMessage("JSON.parse failed on: \"" + input + "\"");
             return false;
         }
-        this.push(parsed).forEach(function (hash) { return _this.options.selectorPropertyAttacher(node, hash); });
+        this.push(parsed, node).forEach(function (hash) { return _this.options.selectorPropertyAttacher(node, hash); });
         this.nodes.push(node);
         return node;
     };
@@ -272,15 +291,12 @@ var Css = /** @class */ (function () {
     Css.prototype.reOrderStyles = function (styleString) {
         return styleString.split(';')
             .filter(function (e) { return e.trim() !== ''; })
-            .map(function (e) {
-            e = e.trim().split(':')
-                .map(function (p) { return p.trim(); })
-                .join(':');
-            //todo replace split/join with regexp?
-            return e;
-        }).sort().join(';');
+            .map(function (e) { return e.trim().replace(/\s*:\s*/g, ':'); })
+            .sort().join(';');
     };
-    Css.prototype.keyToMediaQuery = function (key) {
+    Css.prototype.keyToMediaQuery = function (key, node) {
+        var _a;
+        if (node === void 0) { node = null; }
         if (key in this.mediaQueries) {
             return this.mediaQueries[key];
         }
@@ -306,11 +322,9 @@ var Css = /** @class */ (function () {
                 }
                 else {
                     //attempt to check if feature exists and run feature
-                    //todo implement magic vars $node, $key(?) in custom feature that will pass the
-                    //current node or key to the custom feature as an argument
                     var featureMatches = this.regexps.featureMatcher.exec(fragment);
                     if (this.options.features && featureMatches && featureMatches[1] && featureMatches[1] in this.options.features) {
-                        this.options.features[featureMatches[1]](mediaQueryParts, featureMatches[2]);
+                        (_a = this.options.features)[featureMatches[1]].apply(_a, [mediaQueryParts, featureMatches[2], key, node]);
                     }
                 }
             }
@@ -319,8 +333,8 @@ var Css = /** @class */ (function () {
                 mediaQueryPartsArray.push(mediaQueryParts.media);
                 delete mediaQueryParts.media;
             }
-            for (var _i = 0, _a = Object.entries(mediaQueryParts); _i < _a.length; _i++) {
-                var _b = _a[_i], k = _b[0], v = _b[1];
+            for (var _i = 0, _b = Object.entries(mediaQueryParts); _i < _b.length; _i++) {
+                var _c = _b[_i], k = _c[0], v = _c[1];
                 if (v === true) {
                     mediaQueryPartsArray.push("(" + k + ")");
                 }
@@ -363,13 +377,14 @@ var Css = /** @class */ (function () {
         }
         return content.join("\n");
     };
-    Css.prototype.push = function (styleObject) {
+    Css.prototype.push = function (styleObject, node) {
+        if (node === void 0) { node = null; }
         if (typeof styleObject === 'string') {
             styleObject = JSON.parse(styleObject);
         }
         var hashes = [];
         for (var key in styleObject) {
-            var mediaQuery = this.keyToMediaQuery(key), style = this.reOrderStyles(styleObject[key]), hash = this.hash(mediaQuery + ":" + style, this.hashSeed), selector = this.options.selectorTemplate(hash);
+            var mediaQuery = this.keyToMediaQuery(key, node), style = this.reOrderStyles(styleObject[key]), hash = this.hash(mediaQuery + ":" + style, this.hashSeed), selector = this.options.selectorTemplate(hash);
             this.addStyle(mediaQuery, selector, style);
             hashes.push(hash);
         }

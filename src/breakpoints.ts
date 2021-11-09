@@ -35,16 +35,9 @@ export class Breakpoints {
     };
 
     processKey(mediaQuery: any, keyToParse: string) {
-        const isOnly = this.regexps.isOnly.test(keyToParse),
-            isGT = this.regexps.isGT.test(keyToParse),
-            isLT = this.regexps.isLT.test(keyToParse),
-            isBetween = this.regexps.isBetween.test(keyToParse),
-            usesOnlyBreakpointKeys: RegExpExecArray | null = this.regexps.usesOnlyBreakpointKeys.exec(keyToParse),
+        const usesOnlyBreakpointKeys: RegExpExecArray | null = this.regexps.usesOnlyBreakpointKeys.exec(keyToParse),
             usesMixedValues: RegExpExecArray | null = this.regexps.usesMixedValues.exec(keyToParse),
             compareEquality: boolean = /^\wte/.test(keyToParse);
-
-        //todo dont run all regexps at once
-        //todo implement run order in options
 
         let upper: string | null = null,
             lower: string | null = null;
@@ -60,8 +53,12 @@ export class Breakpoints {
         } else if (usesOnlyBreakpointKeys!) {
             let first: string = usesOnlyBreakpointKeys[1],
                 second: string = usesOnlyBreakpointKeys[2];
+            const isOnly = this.regexps.isOnly.test(keyToParse),
+                isLT = this.regexps.isLT.test(keyToParse),
+                isBetween = this.regexps.isBetween.test(keyToParse);
 
-            lower = this.value(first);
+
+                lower = this.value(first);
 
             if (isOnly) {
                 let next = this.next(first);
@@ -78,9 +75,13 @@ export class Breakpoints {
 
         } else {
 
-            let actualBreakpoints: RegExpExecArray | null = this.regexps.actualBreakpoints.exec(keyToParse);
+            const actualBreakpoints: RegExpExecArray | null = this.regexps.actualBreakpoints.exec(keyToParse),
+                isGT = this.regexps.isGT.test(keyToParse),
+                isLT = this.regexps.isLT.test(keyToParse),
+                isBetween = this.regexps.isBetween.test(keyToParse);
 
-            if (actualBreakpoints!) {
+
+                if (actualBreakpoints!) {
                 if (isBetween) {
                     lower = actualBreakpoints[1];
                     upper = actualBreakpoints[2];
